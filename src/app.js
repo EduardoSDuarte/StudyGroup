@@ -3,6 +3,10 @@ const cors = require("cors");
 
 const authRoutes = require("./routes/authRoutes");
 const groupRoutes = require("./routes/groupRoutes");
+const timerRoutes = require("./routes/timerRoutes");
+const rankingRoutes = require("./routes/rankingRoutes");
+const summaryRoutes = require("./routes/summaryRoutes");
+const reminderRoutes = require("./routes/reminderRoutes");
 
 const app = express();
 
@@ -17,5 +21,9 @@ app.get("/", (req, res) => {
 
 app.use("/auth", authRoutes);
 app.use("/group", groupRoutes);
+app.use("/timer", timerRoutes);
+app.use("/ranking", rankingRoutes);
+app.use("/summary", summaryRoutes);
+app.use("/reminder", reminderRoutes);
 
 module.exports = app;
