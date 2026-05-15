@@ -55,7 +55,7 @@ const stopSession = async (userId, groupId) => {
   const session = doc.data();
 
   const endTime = new Date();
-  const duration = Math.floor((endTime - session.startTime.toDate()) / 1000); // em segundos
+  const duration = Math.floor((endTime - session.startTime.toDate()) / 1000);
 
   // Atualiza a sessão
   await doc.ref.update({
@@ -64,20 +64,43 @@ const stopSession = async (userId, groupId) => {
     active: false,
   });
 
-  // Acumula o tempo total no groupMembers
-  const memberSnap = await db.collection("groupMembers")
-    .where("groupId", "==", groupId)
-    .where("userId", "==", userId)
-    .get();
+  // 🔹 Chave do dia: userId_groupId_YYYY-MM-DD
+  const today = new Date().toISOString().split("T")[0];
+  const dailyKey = `${userId}_${groupId}_${today}`;
 
-  const memberDoc = memberSnap.docs[0];
-  const currentTotal = memberDoc.data().totalStudyTime || 0;
+  // 🔹 Chave do mês: userId_groupId_YYYY-MM
+  const month = today.slice(0, 7);
+  const monthlyKey = `${userId}_${groupId}_${month}`;
 
-  await memberDoc.ref.update({
-    totalStudyTime: currentTotal + duration,
+  // 🔹 Atualiza tempo diário
+  const dailyRef = db.collection("dailyStudyTime").doc(dailyKey);
+  const dailyDoc = await dailyRef.get();
+  const currentDaily = dailyDoc.exists ? dailyDoc.data().totalTime || 0 : 0;
+
+  await dailyRef.set({
+    userId,
+    groupId,
+    date: today,
+    totalTime: currentDaily + duration,
   });
 
-  return { duration, totalStudyTime: currentTotal + duration };
+  // 🔹 Atualiza tempo mensal
+  const monthlyRef = db.collection("monthlyStudyTime").doc(monthlyKey);
+  const monthlyDoc = await monthlyRef.get();
+  const currentMonthly = monthlyDoc.exists ? monthlyDoc.data().totalTime || 0 : 0;
+
+  await monthlyRef.set({
+    userId,
+    groupId,
+    month,
+    totalTime: currentMonthly + duration,
+  });
+
+  return {
+    duration,
+    dailyTotal: currentDaily + duration,
+    monthlyTotal: currentMonthly + duration,
+  };
 };
 
 module.exports = { startSession, stopSession };
