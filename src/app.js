@@ -8,6 +8,7 @@ const timerRoutes = require("./routes/timerRoutes");
 const rankingRoutes = require("./routes/rankingRoutes");
 const summaryRoutes = require("./routes/summaryRoutes");
 const reminderRoutes = require("./routes/reminderRoutes");
+const callRoutes = require("./routes/callRoutes");
 
 const app = express();
 
@@ -26,5 +27,6 @@ app.use("/timer", timerRoutes);
 app.use("/ranking", rankingRoutes);
 app.use("/summary", summaryRoutes);
 app.use("/reminder", reminderRoutes);
+app.use("/call", callRoutes);
 
 module.exports = app;
