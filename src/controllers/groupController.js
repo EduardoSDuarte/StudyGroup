@@ -8,11 +8,12 @@ const {
   joinByInvite,
   approveRequest,
   rejectRequest,
+  deleteGroup,
 } = require("../services/groupService");
 
-//////////////////////////////////////////////////////
+
 // 🔹 CRIAR GRUPO
-//////////////////////////////////////////////////////
+
 const create = async (req, res) => {
   try {
     const { name } = req.body;
@@ -27,9 +28,8 @@ const create = async (req, res) => {
   }
 };
 
-//////////////////////////////////////////////////////
 // 🔹 ENTRAR NO GRUPO
-//////////////////////////////////////////////////////
+
 const join = async (req, res) => {
   try {
     const userId = req.user.uid;
@@ -43,9 +43,8 @@ const join = async (req, res) => {
   }
 };
 
-//////////////////////////////////////////////////////
 // 🔹 SAIR DO GRUPO
-//////////////////////////////////////////////////////
+
 const leave = async (req, res) => {
   try {
     const userId = req.user.uid;
@@ -59,9 +58,8 @@ const leave = async (req, res) => {
   }
 };
 
-//////////////////////////////////////////////////////
 // 🔹 REMOVER USUÁRIO (ADMIN)
-//////////////////////////////////////////////////////
+
 const remove = async (req, res) => {
   try {
     const adminId = req.user.uid; // 🔥 pega quem está logado
@@ -75,9 +73,8 @@ const remove = async (req, res) => {
   }
 };
 
-//////////////////////////////////////////////////////
 // 🔹 TRANSFERIR ADMIN (ADMIN)
-//////////////////////////////////////////////////////
+
 const transfer = async (req, res) => {
   try {
     const adminId = req.user.uid; // 🔥 pega quem está logado
@@ -91,9 +88,8 @@ const transfer = async (req, res) => {
   }
 };
 
-//////////////////////////////////////////////////////
 // 🔻 EXPORT
-//////////////////////////////////////////////////////
+
 
 const invite = async (req, res) => {
   try {
@@ -116,9 +112,9 @@ const joinViaInvite = async (req, res) => {
     return res.status(400).json({ error: error.message });
   }
 };
-//////////////////////////////////////////////////////
+
 // 🔹 APROVAR SOLICITAÇÃO
-//////////////////////////////////////////////////////
+
 const approve = async (req, res) => {
   try {
     const adminId = req.user.uid;
@@ -130,14 +126,26 @@ const approve = async (req, res) => {
   }
 };
 
-//////////////////////////////////////////////////////
 // 🔹 RECUSAR SOLICITAÇÃO
-//////////////////////////////////////////////////////
+
 const reject = async (req, res) => {
   try {
     const adminId = req.user.uid;
     const { requestId } = req.body;
     const result = await rejectRequest(adminId, requestId);
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
+// 🔹 DELETAR GRUPO (ADMIN ONLY)
+
+const removeGroup = async (req, res) => {
+  try {
+    const adminId = req.user.uid;
+    const { groupId } = req.body;
+    const result = await deleteGroup(adminId, groupId);
     return res.status(200).json(result);
   } catch (error) {
     return res.status(400).json({ error: error.message });
@@ -154,4 +162,5 @@ module.exports = {
   joinViaInvite,
   approve,
   reject,
+  removeGroup,
 };

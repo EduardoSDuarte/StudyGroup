@@ -14,6 +14,7 @@ const {
   joinViaInvite,
   approve,
   reject,
+  removeGroup,
 } = require("../controllers/groupController");
 
 router.post("/create", verifyToken, create);
@@ -25,5 +26,6 @@ router.post("/invite", verifyToken, isAdmin, invite);
 router.post("/join-invite", verifyToken, joinViaInvite);
 router.post("/approve-request", verifyToken, isAdmin, approve);
 router.post("/reject-request", verifyToken, isAdmin, reject);
+router.delete("/delete-group", verifyToken, removeGroup);
 
 module.exports = router;

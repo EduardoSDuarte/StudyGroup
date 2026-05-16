@@ -192,9 +192,9 @@ const joinByInvite = async (userId, inviteCode) => {
 
   return { message: "Solicitação enviada, aguarde aprovação do admin." };
 };
-//////////////////////////////////////////////////////
+
 // 🔹 APROVAR SOLICITAÇÃO
-//////////////////////////////////////////////////////
+
 const approveRequest = async (adminId, requestId) => {
   const requestRef = db.collection("joinRequests").doc(requestId);
   const requestDoc = await requestRef.get();
@@ -221,9 +221,8 @@ const approveRequest = async (adminId, requestId) => {
   return { message: "Usuário aprovado" };
 };
 
-//////////////////////////////////////////////////////
 // 🔹 RECUSAR SOLICITAÇÃO
-//////////////////////////////////////////////////////
+
 const rejectRequest = async (adminId, requestId) => {
   const requestRef = db.collection("joinRequests").doc(requestId);
   const requestDoc = await requestRef.get();
@@ -244,6 +243,44 @@ const rejectRequest = async (adminId, requestId) => {
   return { message: "Solicitação recusada" };
 };
 
+// 🔹 DELETAR GRUPO (ADMIN ONLY)
+
+const deleteGroup = async (adminId, groupId) => {
+  const groupRef = db.collection("groups").doc(groupId);
+  const groupDoc = await groupRef.get();
+
+  if (!groupDoc.exists) throw new Error("Grupo não existe");
+  if (groupDoc.data().adminId !== adminId) throw new Error("Apenas admin pode deletar o grupo");
+
+  // Notifica todos os membros
+  await sendToGroup(groupId, "❌ Grupo deletado!", `O grupo "${groupDoc.data().name}" foi encerrado pelo administrador.`);
+
+  // Deleta todos os membros
+  const membersSnap = await db.collection("groupMembers")
+    .where("groupId", "==", groupId)
+    .get();
+  const batch = db.batch();
+  membersSnap.docs.forEach(doc => batch.delete(doc.ref));
+
+  // Deleta todos os lembretes
+  const remindersSnap = await db.collection("reminders")
+    .where("groupId", "==", groupId)
+    .get();
+  remindersSnap.docs.forEach(doc => batch.delete(doc.ref));
+
+  // Deleta todos os resumos
+  const summariesSnap = await db.collection("summaries")
+    .where("groupId", "==", groupId)
+    .get();
+  summariesSnap.docs.forEach(doc => batch.delete(doc.ref));
+
+  // Deleta o grupo
+  batch.delete(groupRef);
+  await batch.commit();
+
+  return { message: "Grupo deletado com sucesso" };
+};
+
 module.exports = {
   createGroup,
   joinGroup,
@@ -254,4 +291,5 @@ module.exports = {
   joinByInvite,
   approveRequest,
   rejectRequest,
+  deleteGroup,
 };
