@@ -10,16 +10,16 @@ const verifyToken = async (req, res, next) => {
 
     const decoded = await admin.auth().verifyIdToken(token);
 
-    // if (!decoded.email_verified) {
-//   return res.status(403).json({ error: "Email não verificado" });
-// }
+     if (!decoded.email_verified) {
+       return res.status(403).json({ error: "Email não verificado" });
+     }
 
     req.user = decoded;
     next();
   } catch (error) {
-  console.error(error);
-  return res.status(401).json({ error: "Token inválido" });
-}
+    console.error(error);
+    return res.status(401).json({ error: "Token inválido" });
+  }
 };
 
 module.exports = verifyToken;
