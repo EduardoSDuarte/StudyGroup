@@ -1,4 +1,5 @@
 const { db } = require("../config/firebaseAdmin");
+const { sendToGroup } = require("./notificationService");
 
 // 🔹 CRIAR LEMBRETE
 
@@ -26,6 +27,7 @@ const createReminder = async (userId, groupId, title, datetime, description) => 
   };
 
   const docRef = await db.collection("reminders").add(reminder);
+  await sendToGroup(groupId, "📅 Novo lembrete!", `${title} — ${datetime}`);
   return { reminderId: docRef.id, ...reminder };
 };
 

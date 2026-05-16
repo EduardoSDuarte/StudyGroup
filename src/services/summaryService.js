@@ -1,4 +1,5 @@
 const { db } = require("../config/firebaseAdmin");
+const { sendToUser } = require("./notificationService");
 
 
 // 🔹 CRIAR RESUMO
@@ -22,6 +23,7 @@ const createSummary = async (userId, groupId, title, content) => {
   };
 
   const docRef = await db.collection("summaries").add(summary);
+  await sendToUser(summary.userId, "💬 Novo comentário!", `Alguém comentou no seu resumo: ${summary.title}`);
   return { summaryId: docRef.id, ...summary };
 };
 
