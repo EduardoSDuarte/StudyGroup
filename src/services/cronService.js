@@ -1,5 +1,6 @@
 const cron = require("node-cron");
 const { db } = require("../config/firebaseAdmin");
+const { sendToGroup } = require("./notificationService");
 
 // 🔹 TODO DIA À MEIA-NOITE — zera tempo diário
 
@@ -73,6 +74,31 @@ cron.schedule("0 0 * * *", async () => {
     }
 
     console.log(`✅ Ranking do grupo ${groupId} salvo.`);
+  }
+});
+
+//////////////////////////////////////////////////////
+// 🔹 A CADA MINUTO — verifica lembretes no horário
+//////////////////////////////////////////////////////
+cron.schedule("* * * * *", async () => {
+  const now = new Date();
+  const start = new Date(now);
+  start.setSeconds(0, 0);
+  const end = new Date(now);
+  end.setSeconds(59, 999);
+
+  const snap = await db.collection("reminders")
+    .where("datetime", ">=", start)
+    .where("datetime", "<=", end)
+    .get();
+
+  for (const doc of snap.docs) {
+    const reminder = doc.data();
+    await sendToGroup(
+      reminder.groupId,
+      "⏰ Lembrete!",
+      `${reminder.title}`
+    );
   }
 });
 
