@@ -1,3 +1,4 @@
+console.log("Group routes carregadas ✅");
 const express = require("express");
 const cors = require("cors");
 
