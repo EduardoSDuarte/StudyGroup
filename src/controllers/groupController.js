@@ -6,6 +6,8 @@ const {
   transferAdmin,
   generateInvite,
   joinByInvite,
+  approveRequest,
+  rejectRequest,
 } = require("../services/groupService");
 
 //////////////////////////////////////////////////////
@@ -114,6 +116,33 @@ const joinViaInvite = async (req, res) => {
     return res.status(400).json({ error: error.message });
   }
 };
+//////////////////////////////////////////////////////
+// 🔹 APROVAR SOLICITAÇÃO
+//////////////////////////////////////////////////////
+const approve = async (req, res) => {
+  try {
+    const adminId = req.user.uid;
+    const { requestId } = req.body;
+    const result = await approveRequest(adminId, requestId);
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
+//////////////////////////////////////////////////////
+// 🔹 RECUSAR SOLICITAÇÃO
+//////////////////////////////////////////////////////
+const reject = async (req, res) => {
+  try {
+    const adminId = req.user.uid;
+    const { requestId } = req.body;
+    const result = await rejectRequest(adminId, requestId);
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
 
 module.exports = {
   create,
@@ -123,4 +152,6 @@ module.exports = {
   transfer,
   invite,
   joinViaInvite,
+  approve,
+  reject,
 };
