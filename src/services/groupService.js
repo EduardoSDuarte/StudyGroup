@@ -281,15 +281,42 @@ const deleteGroup = async (adminId, groupId) => {
   return { message: "Grupo deletado com sucesso" };
 };
 
+// 🔹 ATUALIZAR NOME DO GRUPO
+const updateGroupName = async (adminId, groupId, newName) => {
+  if (!newName) throw new Error("Novo nome é obrigatório");
+
+  const groupRef = db.collection("groups").doc(groupId);
+  const groupDoc = await groupRef.get();
+
+  if (!groupDoc.exists) throw new Error("Grupo não existe");
+  if (groupDoc.data().adminId !== adminId) throw new Error("Apenas admin pode atualizar o grupo");
+
+  await groupRef.update({ name: newName });
+
+  return { message: "Nome do grupo atualizado com sucesso" };
+};
+
+// 🔹 LISTAR MEMBROS DO GRUPO
+const getGroupMembers = async (userId, groupId) => {
+  const memberCheck = await db.collection("groupMembers")
+    .where("groupId", "==", groupId)
+    .where("userId", "==", userId)
+    .get();
+
+  if (memberCheck.empty) throw new Error("Usuário não está nesse grupo");
+
+  const snap = await db.collection("groupMembers")
+    .where("groupId", "==", groupId)
+    .get();
+
+  return snap.docs.map(doc => ({
+    userId: doc.data().userId,
+    role: doc.data().role,
+  }));
+};
+
 module.exports = {
-  createGroup,
-  joinGroup,
-  leaveGroup,
-  removeUser,
-  transferAdmin,
-  generateInvite,
-  joinByInvite,
-  approveRequest,
-  rejectRequest,
-  deleteGroup,
+  createGroup, joinGroup, leaveGroup, removeUser, transferAdmin,
+  generateInvite, joinByInvite, approveRequest, rejectRequest,
+  deleteGroup, updateGroupName, getGroupMembers
 };

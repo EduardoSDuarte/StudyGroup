@@ -1,14 +1,6 @@
 const {
-  createGroup,
-  joinGroup,
-  leaveGroup,
-  removeUser,
-  transferAdmin,
-  generateInvite,
-  joinByInvite,
-  approveRequest,
-  rejectRequest,
-  deleteGroup,
+  createGroup, joinGroup, leaveGroup, removeUser, transferAdmin,
+  generateInvite, joinByInvite, updateGroupName, getGroupMembers
 } = require("../services/groupService");
 
 
@@ -43,6 +35,31 @@ const join = async (req, res) => {
   }
 };
 
+// 🔹 ATUALIZAR NOME DO GRUPO (ADMIN)
+const updateGroup = async (req, res) => {
+  try {
+    const adminId = req.user.uid;
+    const { groupId, newName } = req.body;
+    const result = await updateGroupName(adminId, groupId, newName);
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
+// 🔹 LISTAR MEMBROS DO GRUPO
+const listMembers = async (req, res) => {
+  try {
+    const userId = req.user.uid;
+    const { groupId } = req.params;
+    const result = await getGroupMembers(userId, groupId);
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
+//////////////////////////////////////////////////////
 // 🔹 SAIR DO GRUPO
 
 const leave = async (req, res) => {
@@ -153,14 +170,6 @@ const removeGroup = async (req, res) => {
 };
 
 module.exports = {
-  create,
-  join,
-  leave,
-  remove,
-  transfer,
-  invite,
-  joinViaInvite,
-  approve,
-  reject,
-  removeGroup,
+  create, join, leave, remove, transfer,
+  invite, joinViaInvite, updateGroup, listMembers
 };
