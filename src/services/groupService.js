@@ -1,9 +1,8 @@
 const { db } = require("../config/firebaseAdmin");
 const { v4: uuidv4 } = require("uuid");
+const { sendToUser, sendToGroup } = require("./notificationService");
 
-//////////////////////////////////////////////////////
 // 🔹 CREATE GROUP
-//////////////////////////////////////////////////////
 
 const createGroup = async (userId, name) => {
   const groupId = uuidv4();
@@ -26,9 +25,7 @@ const createGroup = async (userId, name) => {
   return group;
 };
 
-//////////////////////////////////////////////////////
 // 🔹 JOIN GROUP
-//////////////////////////////////////////////////////
 
 const joinGroup = async (userId, groupId) => {
   const groupDoc = await db.collection("groups").doc(groupId).get();
@@ -57,9 +54,7 @@ const joinGroup = async (userId, groupId) => {
   return { message: "Entrou no grupo" };
 };
 
-//////////////////////////////////////////////////////
 // 🔹 LEAVE GROUP
-//////////////////////////////////////////////////////
 
 const leaveGroup = async (userId, groupId) => {
   // Verifica se é o admin tentando sair
@@ -82,9 +77,7 @@ const leaveGroup = async (userId, groupId) => {
   return { message: "Saiu do grupo" };
 };
 
-//////////////////////////////////////////////////////
 // 🔹 REMOVE USER (ADMIN ONLY)
-//////////////////////////////////////////////////////
 
 const removeUser = async (adminId, groupId, userIdToRemove) => {
   const groupRef = db.collection("groups").doc(groupId);
@@ -110,12 +103,12 @@ const removeUser = async (adminId, groupId, userIdToRemove) => {
 
   snapshot.forEach(doc => doc.ref.delete());
 
+  await sendToUser(userIdToRemove, "❌ Removido do grupo", "Você foi removido do grupo pelo administrador.");
+
   return { message: "Usuário removido" };
 };
 
-//////////////////////////////////////////////////////
 // 🔹 TRANSFER ADMIN
-//////////////////////////////////////////////////////
 
 const transferAdmin = async (adminId, groupId, newAdminId) => {
   const groupRef = db.collection("groups").doc(groupId);
@@ -144,9 +137,7 @@ const transferAdmin = async (adminId, groupId, newAdminId) => {
   return { message: "Admin transferido" };
 };
 
-//////////////////////////////////////////////////////
 // 🔻 EXPORTS
-//////////////////////////////////////////////////////
 
 const generateInvite = async (adminId, groupId) => {
   const groupDoc = await db.collection("groups").doc(groupId).get();
@@ -186,15 +177,108 @@ const joinByInvite = async (userId, inviteCode) => {
     .get();
   if (!existing.empty) throw new Error("Usuário já está no grupo");
 
-  await db.collection("groupMembers").add({
+  // 🔹 Cria solicitação pendente ao invés de entrar direto
+  await db.collection("joinRequests").add({
     groupId: invite.groupId,
     userId,
+    status: "pending",
+    createdAt: new Date(),
+  });
+
+  // 🔹 Notifica o admin
+  const groupDoc = await db.collection("groups").doc(invite.groupId).get();
+  const adminId = groupDoc.data().adminId;
+  await sendToUser(adminId, "👥 Solicitação de entrada!", "Um usuário quer entrar no seu grupo. Acesse para aprovar ou recusar.");
+
+  return { message: "Solicitação enviada, aguarde aprovação do admin." };
+};
+
+// 🔹 APROVAR SOLICITAÇÃO
+
+const approveRequest = async (adminId, requestId) => {
+  const requestRef = db.collection("joinRequests").doc(requestId);
+  const requestDoc = await requestRef.get();
+
+  if (!requestDoc.exists) throw new Error("Solicitação não encontrada");
+
+  const request = requestDoc.data();
+
+  const groupDoc = await db.collection("groups").doc(request.groupId).get();
+  if (groupDoc.data().adminId !== adminId) throw new Error("Apenas admin pode aprovar");
+
+  if (request.status !== "pending") throw new Error("Solicitação já foi processada");
+
+  await db.collection("groupMembers").add({
+    groupId: request.groupId,
+    userId: request.userId,
     role: "member",
   });
 
-  await inviteDoc.ref.update({ used: true });
+  await requestRef.update({ status: "approved" });
 
-  return { message: "Entrou no grupo via convite", groupId: invite.groupId };
+  await sendToUser(request.userId, "✅ Solicitação aprovada!", "Você foi aceito no grupo.");
+
+  return { message: "Usuário aprovado" };
+};
+
+// 🔹 RECUSAR SOLICITAÇÃO
+
+const rejectRequest = async (adminId, requestId) => {
+  const requestRef = db.collection("joinRequests").doc(requestId);
+  const requestDoc = await requestRef.get();
+
+  if (!requestDoc.exists) throw new Error("Solicitação não encontrada");
+
+  const request = requestDoc.data();
+
+  const groupDoc = await db.collection("groups").doc(request.groupId).get();
+  if (groupDoc.data().adminId !== adminId) throw new Error("Apenas admin pode recusar");
+
+  if (request.status !== "pending") throw new Error("Solicitação já foi processada");
+
+  await requestRef.update({ status: "rejected" });
+
+  await sendToUser(request.userId, "❌ Solicitação recusada!", "Sua solicitação de entrada no grupo foi recusada.");
+
+  return { message: "Solicitação recusada" };
+};
+
+// 🔹 DELETAR GRUPO (ADMIN ONLY)
+
+const deleteGroup = async (adminId, groupId) => {
+  const groupRef = db.collection("groups").doc(groupId);
+  const groupDoc = await groupRef.get();
+
+  if (!groupDoc.exists) throw new Error("Grupo não existe");
+  if (groupDoc.data().adminId !== adminId) throw new Error("Apenas admin pode deletar o grupo");
+
+  // Notifica todos os membros
+  await sendToGroup(groupId, "❌ Grupo deletado!", `O grupo "${groupDoc.data().name}" foi encerrado pelo administrador.`);
+
+  // Deleta todos os membros
+  const membersSnap = await db.collection("groupMembers")
+    .where("groupId", "==", groupId)
+    .get();
+  const batch = db.batch();
+  membersSnap.docs.forEach(doc => batch.delete(doc.ref));
+
+  // Deleta todos os lembretes
+  const remindersSnap = await db.collection("reminders")
+    .where("groupId", "==", groupId)
+    .get();
+  remindersSnap.docs.forEach(doc => batch.delete(doc.ref));
+
+  // Deleta todos os resumos
+  const summariesSnap = await db.collection("summaries")
+    .where("groupId", "==", groupId)
+    .get();
+  summariesSnap.docs.forEach(doc => batch.delete(doc.ref));
+
+  // Deleta o grupo
+  batch.delete(groupRef);
+  await batch.commit();
+
+  return { message: "Grupo deletado com sucesso" };
 };
 
 // 🔹 ATUALIZAR NOME DO GRUPO
