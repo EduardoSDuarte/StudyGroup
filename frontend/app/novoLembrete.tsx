@@ -1,86 +1,66 @@
 import { router } from "expo-router";
-import { ScrollView, Text, TextInput, TouchableOpacity } from "react-native";
+import { useState } from "react";
+import { Alert, ScrollView, Text, TextInput, TouchableOpacity, ActivityIndicator } from "react-native";
+import api from "../services/api";
 
 export default function NovoLembrete() {
+  const [titulo, setTitulo] = useState("");
+  const [data, setData] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSalvar = async () => {
+    if (!titulo || !data) {
+      Alert.alert("Erro", "Preencha o título e a data!");
+      return;
+    }
+    setLoading(true);
+    try {
+      await api.post("/reminder/create", { title: titulo, date: data });
+      Alert.alert("Sucesso", "Lembrete salvo!", [
+        { text: "OK", onPress: () => router.back() }
+      ]);
+    } catch (error: any) {
+      Alert.alert("Erro", "Não foi possível salvar o lembrete. Tente novamente!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <ScrollView
-      style={{
-        flex: 1,
-        backgroundColor: "#0B1E4D",
-      }}
-      contentContainerStyle={{
-        padding: 20,
-        paddingBottom: 40,
-        flexGrow: 1,
-      }}
+      style={{ flex: 1, backgroundColor: "#0B1E4D" }}
+      contentContainerStyle={{ padding: 20, paddingBottom: 40, flexGrow: 1 }}
     >
-      <TouchableOpacity
-        onPress={() => router.back()}
-        style={{
-          marginTop: 40,
-          marginBottom: 20,
-        }}
-      >
-        <Text
-          style={{
-            color: "#4F7CFF",
-            fontSize: 18,
-            fontWeight: "bold",
-          }}
-        >
-          ← Voltar
-        </Text>
+      <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 40, marginBottom: 20 }}>
+        <Text style={{ color: "#4F7CFF", fontSize: 18, fontWeight: "bold" }}>← Voltar</Text>
       </TouchableOpacity>
-
-      <Text
-        style={{
-          color: "white",
-          fontSize: 28,
-          fontWeight: "bold",
-          marginBottom: 30,
-        }}
-      >
+      <Text style={{ color: "white", fontSize: 28, fontWeight: "bold", marginBottom: 30 }}>
         Novo Lembrete 📅
       </Text>
-
       <TextInput
         placeholder="Título"
         placeholderTextColor="#999"
-        style={{
-          backgroundColor: "white",
-          borderRadius: 12,
-          padding: 15,
-          marginBottom: 15,
-        }}
+        value={titulo}
+        onChangeText={setTitulo}
+        style={{ backgroundColor: "white", borderRadius: 12, padding: 15, marginBottom: 15 }}
       />
-
       <TextInput
-        placeholder="Data"
+        placeholder="Data (ex: 10/06/2026)"
         placeholderTextColor="#999"
-        style={{
-          backgroundColor: "white",
-          borderRadius: 12,
-          padding: 15,
-          marginBottom: 20,
-        }}
+        value={data}
+        onChangeText={setData}
+        style={{ backgroundColor: "white", borderRadius: 12, padding: 15, marginBottom: 20 }}
       />
-
       <TouchableOpacity
-        style={{
-          backgroundColor: "#4F7CFF",
-          padding: 15,
-          borderRadius: 12,
-        }}
+        onPress={handleSalvar}
+        disabled={loading}
+        style={{ backgroundColor: "#4F7CFF", padding: 15, borderRadius: 12 }}
       >
-        <Text
-          style={{
-            color: "white",
-            textAlign: "center",
-            fontWeight: "bold",
-          }}
-        >
-          Salvar
-        </Text>
+        {loading ? (
+          <ActivityIndicator color="white" />
+        ) : (
+          <Text style={{ color: "white", textAlign: "center", fontWeight: "bold" }}>Salvar</Text>
+        )}
       </TouchableOpacity>
     </ScrollView>
   );
