@@ -1,0 +1,109 @@
+import { router } from "expo-router";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+
+export default function RemoverMembro() {
+  return (
+    <ScrollView
+      style={{
+        flex: 1,
+        backgroundColor: "#0B1E4D",
+      }}
+      contentContainerStyle={{
+        padding: 20,
+        paddingBottom: 40,
+      }}
+    >
+      <TouchableOpacity
+        onPress={() => router.back()}
+        style={{
+          marginTop: 40,
+          marginBottom: 20,
+        }}
+      >
+        <Text
+          style={{
+            color: "#4F7CFF",
+            fontSize: 18,
+            fontWeight: "bold",
+          }}
+        >
+          ← Voltar
+        </Text>
+      </TouchableOpacity>
+
+      <Text
+        style={{
+          color: "white",
+          fontSize: 30,
+          fontWeight: "bold",
+          marginBottom: 30,
+        }}
+      >
+        Remover Membro ❌
+      </Text>
+
+      <Text
+        style={{
+          color: "#ccc",
+          marginBottom: 20,
+        }}
+      >
+        Selecione o membro que deseja remover do grupo.
+      </Text>
+
+      <View
+        style={{
+          backgroundColor: "#1D2F6F",
+          padding: 20,
+          borderRadius: 15,
+          marginBottom: 15,
+        }}
+      >
+        <Text
+          style={{
+            color: "white",
+            fontSize: 18,
+          }}
+        >
+          👤 Nique
+        </Text>
+      </View>
+
+      <View
+        style={{
+          backgroundColor: "#1D2F6F",
+          padding: 20,
+          borderRadius: 15,
+          marginBottom: 25,
+        }}
+      >
+        <Text
+          style={{
+            color: "white",
+            fontSize: 18,
+          }}
+        >
+          👤 João
+        </Text>
+      </View>
+
+      <TouchableOpacity
+        style={{
+          backgroundColor: "#E74C3C",
+          padding: 15,
+          borderRadius: 12,
+        }}
+      >
+        <Text
+          style={{
+            color: "white",
+            textAlign: "center",
+            fontWeight: "bold",
+          }}
+        >
+          Remover Selecionado
+        </Text>
+      </TouchableOpacity>
+    </ScrollView>
+  );
+}
