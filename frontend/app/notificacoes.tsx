@@ -1,6 +1,8 @@
 import { router } from "expo-router";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
+// Notificações ainda são mockadas — integração real dependeria de FCM token
+// salvo no backend/Firestore. Por ora, exibe histórico visual estático.
 const notificacoesMock = [
   { id: 1, titulo: "📞 Ligação iniciada", descricao: "Pietra iniciou uma chamada no grupo." },
   { id: 2, titulo: "📝 Novo resumo", descricao: "João adicionou um resumo de Grafos." },

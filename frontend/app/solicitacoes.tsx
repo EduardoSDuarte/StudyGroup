@@ -1,7 +1,8 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
-import api from "../services/api";
+import { groupContext } from "../services/groupContext";
+import { listarSolicitacoes, aprovarSolicitacao, recusarSolicitacao } from "../services/groupService";
 
 export default function Solicitacoes() {
   const [solicitacoes, setSolicitacoes] = useState<any[]>([]);
@@ -14,8 +15,9 @@ export default function Solicitacoes() {
   const carregarSolicitacoes = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/group/solicitacoes");
-      setSolicitacoes(res.data);
+      // ✅ Endpoint correto com groupId
+      const dados = await listarSolicitacoes(groupContext.groupId);
+      setSolicitacoes(dados);
     } catch (error) {
       setSolicitacoes([]);
     } finally {
@@ -23,9 +25,10 @@ export default function Solicitacoes() {
     }
   };
 
-  const handleAceitar = async (id: string) => {
+  const handleAceitar = async (userId: string) => {
     try {
-      await api.post("/group/join", { requestId: id });
+      // ✅ Endpoint correto: approve-request
+      await aprovarSolicitacao(groupContext.groupId, userId);
       Alert.alert("Sucesso", "Solicitação aceita!");
       carregarSolicitacoes();
     } catch (error) {
@@ -33,9 +36,10 @@ export default function Solicitacoes() {
     }
   };
 
-  const handleRecusar = async (id: string) => {
+  const handleRecusar = async (userId: string) => {
     try {
-      await api.post("/group/leave", { requestId: id });
+      // ✅ Endpoint correto: reject-request
+      await recusarSolicitacao(groupContext.groupId, userId);
       Alert.alert("Sucesso", "Solicitação recusada!");
       carregarSolicitacoes();
     } catch (error) {
@@ -65,13 +69,13 @@ export default function Solicitacoes() {
             </Text>
             <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
               <TouchableOpacity
-                onPress={() => handleAceitar(solicitacao.id)}
+                onPress={() => handleAceitar(solicitacao.userId)}
                 style={{ backgroundColor: "#2ECC71", width: "48%", padding: 12, borderRadius: 10 }}
               >
                 <Text style={{ color: "white", textAlign: "center", fontWeight: "bold" }}>Aceitar</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => handleRecusar(solicitacao.id)}
+                onPress={() => handleRecusar(solicitacao.userId)}
                 style={{ backgroundColor: "#E74C3C", width: "48%", padding: 12, borderRadius: 10 }}
               >
                 <Text style={{ color: "white", textAlign: "center", fontWeight: "bold" }}>Recusar</Text>
@@ -80,6 +84,7 @@ export default function Solicitacoes() {
           </View>
         ))
       ) : (
+        // Fallback mockado
         <View style={{ backgroundColor: "#1D2F6F", padding: 20, borderRadius: 15, marginBottom: 15 }}>
           <Text style={{ color: "white", fontSize: 18, fontWeight: "bold", marginBottom: 15 }}>João Silva</Text>
           <View style={{ flexDirection: "row", justifyContent: "space-between" }}>

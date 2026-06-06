@@ -1,6 +1,8 @@
 import { router } from "expo-router";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
+// Endpoints admin (GET /admin/users) ainda não existem no backend.
+// Tela mantida como visual para apresentação — RF28.
 export default function PainelUsuarios() {
   const handleAcao = () => {
     Alert.alert("Aviso", "Funcionalidade disponível em breve pelo painel administrativo.");

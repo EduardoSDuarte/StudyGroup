@@ -1,7 +1,8 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
-import api from "../services/api";
+import { groupContext } from "../services/groupContext";
+import { iniciarSessao, encerrarSessao } from "../services/rankingService";
 
 export default function HomeScreen() {
   const [tempo, setTempo] = useState(0);
@@ -20,7 +21,8 @@ export default function HomeScreen() {
 
   const handleIniciar = async () => {
     try {
-      await api.post("/timer/start");
+      // ✅ Endpoint correto: /session/start com groupId
+      await iniciarSessao(groupContext.groupId);
       setRodando(true);
       setSessaoAtiva(true);
     } catch (error) {
@@ -30,7 +32,8 @@ export default function HomeScreen() {
 
   const handlePausar = async () => {
     try {
-      await api.post("/timer/stop");
+      // ✅ Endpoint correto: /session/stop — backend calcula duração e atualiza ranking
+      await encerrarSessao(groupContext.groupId);
       setRodando(false);
       setSessaoAtiva(false);
     } catch (error) {
@@ -41,7 +44,7 @@ export default function HomeScreen() {
   const handleResetar = async () => {
     if (sessaoAtiva) {
       try {
-        await api.post("/timer/stop");
+        await encerrarSessao(groupContext.groupId);
       } catch (error) {}
     }
     setTempo(0);

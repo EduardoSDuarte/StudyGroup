@@ -15,6 +15,7 @@ export default function LoginScreen() {
     }
     setLoading(true);
     try {
+      // ✅ Autentica pelo Firebase via authService — só navega se o login der certo
       await login(email, senha);
       router.push("/grupos");
     } catch (error: any) {

@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import { useState } from "react";
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, ActivityIndicator } from "react-native";
-import api from "../services/api";
+import { atualizarPerfil } from "../services/authService";
 
 export default function EditarPerfil() {
   const [email, setEmail] = useState("");
@@ -18,11 +18,12 @@ export default function EditarPerfil() {
       const body: any = {};
       if (email) body.newEmail = email;
       if (senha) body.newPassword = senha;
-      await api.put("/auth/update", body);
+      // ✅ Usa o service em vez de chamar api diretamente
+      await atualizarPerfil(body);
       Alert.alert("Sucesso", "Perfil atualizado!", [
         { text: "OK", onPress: () => router.back() }
       ]);
-    } catch (error: any) {
+    } catch (error) {
       Alert.alert("Erro", "Não foi possível atualizar o perfil. Tente novamente!");
     } finally {
       setLoading(false);

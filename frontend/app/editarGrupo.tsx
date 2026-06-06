@@ -1,10 +1,12 @@
 import { router } from "expo-router";
 import { useState } from "react";
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, ActivityIndicator } from "react-native";
-import api from "../services/api";
+import { groupContext } from "../services/groupContext";
+import { editarGrupo } from "../services/groupService";
 
 export default function EditarGrupo() {
-  const [nome, setNome] = useState("Os Feras");
+  // ✅ Nome inicial vem do groupContext, não mais fixo "Os Feras"
+  const [nome, setNome] = useState(groupContext.groupName);
   const [loading, setLoading] = useState(false);
 
   const handleSalvar = async () => {
@@ -14,11 +16,14 @@ export default function EditarGrupo() {
     }
     setLoading(true);
     try {
-      await api.put("/group/update", { name: nome });
+      // ✅ Usa o service com groupId correto
+      await editarGrupo(groupContext.groupId, nome);
+      // Atualiza o nome no contexto também
+      groupContext.set(groupContext.groupId, nome);
       Alert.alert("Sucesso", "Grupo atualizado!", [
         { text: "OK", onPress: () => router.back() }
       ]);
-    } catch (error: any) {
+    } catch (error) {
       Alert.alert("Erro", "Não foi possível atualizar o grupo. Tente novamente!");
     } finally {
       setLoading(false);

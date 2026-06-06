@@ -2,6 +2,7 @@ import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
 import api from "../services/api";
+import { groupContext } from "../services/groupContext";
 
 export default function Membros() {
   const [membros, setMembros] = useState<any[]>([]);
@@ -14,7 +15,9 @@ export default function Membros() {
   const carregarMembros = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/group/members");
+      const groupId = groupContext.groupId;
+      // ✅ Endpoint correto com groupId dinâmico
+      const res = await api.get(`/group/${groupId}/members`);
       setMembros(res.data);
     } catch (error) {
       setMembros([]);
@@ -25,7 +28,8 @@ export default function Membros() {
 
   const handleConvidar = async () => {
     try {
-      const res = await api.post("/group/invite");
+      const groupId = groupContext.groupId;
+      const res = await api.post("/group/invite", { groupId });
       Alert.alert("Convite gerado!", `Código: ${res.data.inviteCode}`);
     } catch (error) {
       Alert.alert("Erro", "Não foi possível gerar o convite. Tente novamente!");
@@ -56,6 +60,7 @@ export default function Membros() {
           </View>
         ))
       ) : (
+        // Fallback mockado
         <>
           <View style={{ backgroundColor: "#1D2F6F", padding: 20, borderRadius: 15, marginBottom: 15 }}>
             <Text style={{ color: "#FFD700", fontSize: 18, fontWeight: "bold" }}>👑 Pietra Bezerra</Text>

@@ -1,7 +1,8 @@
 import { router } from "expo-router";
 import { useState } from "react";
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, ActivityIndicator } from "react-native";
-import api from "../services/api";
+import { groupContext } from "../services/groupContext";
+import { denunciarUsuario } from "../services/groupService";
 
 export default function DenunciarUsuario() {
   const [nomeUsuario, setNomeUsuario] = useState("");
@@ -15,11 +16,14 @@ export default function DenunciarUsuario() {
     }
     setLoading(true);
     try {
-      await api.post("/report/user", { reportedUser: nomeUsuario, reason: motivo });
+      // ✅ Endpoint correto: POST /report/create com groupId
+      // Nota: o backend precisa do userId do denunciado, não do nome.
+      // Por enquanto enviamos o nome como reportedUserId até o backend ter busca por nome.
+      await denunciarUsuario(groupContext.groupId, nomeUsuario, motivo);
       Alert.alert("Sucesso", "Denúncia enviada!", [
         { text: "OK", onPress: () => router.back() }
       ]);
-    } catch (error: any) {
+    } catch (error) {
       Alert.alert("Erro", "Não foi possível enviar a denúncia. Tente novamente!");
     } finally {
       setLoading(false);

@@ -2,6 +2,8 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
+// Esta tela não consome API — o estado é apenas visual/local.
+// Em mobile real, silenciar notificações dependeria de permissões do SO.
 export default function ModoFoco() {
   const [ativo, setAtivo] = useState(false);
 

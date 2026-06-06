@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import { useState } from "react";
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, ActivityIndicator } from "react-native";
-import api from "../services/api";
+import { criarGrupo } from "../services/groupService";
 
 export default function NovoGrupo() {
   const [nome, setNome] = useState("");
@@ -15,11 +15,12 @@ export default function NovoGrupo() {
     }
     setLoading(true);
     try {
-      await api.post("/group/create", { name: nome });
+      // ✅ Usa o service — backend aceita só o name por enquanto
+      await criarGrupo(nome);
       Alert.alert("Sucesso", "Grupo criado!", [
         { text: "OK", onPress: () => router.push("/grupos") }
       ]);
-    } catch (error: any) {
+    } catch (error) {
       Alert.alert("Erro", "Não foi possível criar o grupo. Tente novamente!");
     } finally {
       setLoading(false);
@@ -45,7 +46,7 @@ export default function NovoGrupo() {
         style={{ backgroundColor: "white", borderRadius: 12, padding: 15, marginBottom: 15 }}
       />
       <TextInput
-        placeholder="Descrição"
+        placeholder="Descrição (opcional)"
         placeholderTextColor="#999"
         multiline
         numberOfLines={4}

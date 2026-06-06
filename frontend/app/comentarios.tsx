@@ -1,7 +1,8 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View, ActivityIndicator } from "react-native";
-import api from "../services/api";
+import { groupContext } from "../services/groupContext";
+import { listarComentarios, adicionarComentario } from "../services/summaryService";
 
 export default function Comentarios() {
   const [comentarios, setComentarios] = useState<any[]>([]);
@@ -16,8 +17,9 @@ export default function Comentarios() {
   const carregarComentarios = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/summary/list");
-      setComentarios(res.data);
+      // ✅ Endpoint correto: /summary/:summaryId/comments
+      const dados = await listarComentarios(groupContext.summaryId);
+      setComentarios(dados);
     } catch (error) {
       setComentarios([]);
     } finally {
@@ -32,10 +34,11 @@ export default function Comentarios() {
     }
     setEnviando(true);
     try {
-      await api.post("/summary/comment", { content: novoComentario });
+      // ✅ Endpoint correto: /summary/:summaryId/comment
+      await adicionarComentario(groupContext.summaryId, novoComentario);
       setNovoComentario("");
       carregarComentarios();
-    } catch (error: any) {
+    } catch (error) {
       Alert.alert("Erro", "Não foi possível enviar o comentário. Tente novamente!");
     } finally {
       setEnviando(false);
@@ -64,6 +67,7 @@ export default function Comentarios() {
           </View>
         ))
       ) : (
+        // Fallback mockado
         <>
           <View style={{ backgroundColor: "#1D2F6F", padding: 15, borderRadius: 15, marginBottom: 10 }}>
             <Text style={{ color: "white", fontWeight: "bold" }}>João</Text>

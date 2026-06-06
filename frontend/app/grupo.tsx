@@ -1,11 +1,15 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
-import api from "../services/api";
+import { groupContext } from "../services/groupContext";
+import { listarRankingMensal } from "../services/rankingService";
 
 export default function Grupo() {
   const [ranking, setRanking] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // ✅ Pega o nome do grupo salvo no groupContext
+  const nomeDoGrupo = groupContext.groupName || "Meu Grupo";
 
   useEffect(() => {
     carregarRanking();
@@ -14,8 +18,9 @@ export default function Grupo() {
   const carregarRanking = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/ranking");
-      setRanking(res.data);
+      // ✅ Usa o service com o groupId correto
+      const dados = await listarRankingMensal(groupContext.groupId);
+      setRanking(dados);
     } catch (error) {
       setRanking([]);
     } finally {
@@ -32,8 +37,9 @@ export default function Grupo() {
         <Text style={{ color: "#4F7CFF", fontSize: 18, fontWeight: "bold" }}>← Voltar</Text>
       </TouchableOpacity>
 
+      {/* ✅ Nome do grupo vem do groupContext, não mais fixo */}
       <Text style={{ color: "white", fontSize: 30, fontWeight: "bold", marginBottom: 25 }}>
-        Os Feras 📚
+        {nomeDoGrupo} 📚
       </Text>
 
       <View style={{ backgroundColor: "#1D2F6F", borderRadius: 20, padding: 20, marginBottom: 20 }}>
@@ -47,6 +53,7 @@ export default function Grupo() {
             </Text>
           ))
         ) : (
+          // Fallback mockado enquanto a API não responde
           <>
             <Text style={{ color: "#FFD700" }}>🥇 Nique — 02:15:30</Text>
             <Text style={{ color: "#C0C0C0", marginTop: 5 }}>🥈 Pietra — 01:48:12</Text>

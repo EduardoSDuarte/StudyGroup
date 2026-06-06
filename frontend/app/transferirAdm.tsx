@@ -1,7 +1,8 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
-import api from "../services/api";
+import { groupContext } from "../services/groupContext";
+import { listarMembros, transferirAdmin } from "../services/groupService";
 
 export default function TransferirAdm() {
   const [membros, setMembros] = useState<any[]>([]);
@@ -16,8 +17,9 @@ export default function TransferirAdm() {
   const carregarMembros = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/group/members");
-      setMembros(res.data);
+      // ✅ Usa o service com o groupId correto
+      const dados = await listarMembros(groupContext.groupId);
+      setMembros(dados);
     } catch (error) {
       setMembros([]);
     } finally {
@@ -41,11 +43,12 @@ export default function TransferirAdm() {
           onPress: async () => {
             setTransferindo(true);
             try {
-              await api.post("/group/transfer-admin", { newAdminId: selecionado });
+              // ✅ groupId e newAdminId enviados corretamente
+              await transferirAdmin(groupContext.groupId, selecionado);
               Alert.alert("Sucesso", "Administração transferida!", [
                 { text: "OK", onPress: () => router.push("/grupos") }
               ]);
-            } catch (error: any) {
+            } catch (error) {
               Alert.alert("Erro", "Não foi possível transferir. Tente novamente!");
             } finally {
               setTransferindo(false);
@@ -91,6 +94,7 @@ export default function TransferirAdm() {
           </TouchableOpacity>
         ))
       ) : (
+        // Fallback mockado
         <>
           <View style={{ backgroundColor: "#1D2F6F", padding: 20, borderRadius: 15, marginBottom: 15 }}>
             <Text style={{ color: "white", fontSize: 18 }}>👤 Nique</Text>

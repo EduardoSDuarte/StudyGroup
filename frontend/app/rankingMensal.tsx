@@ -1,7 +1,8 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
-import api from "../services/api";
+import { groupContext } from "../services/groupContext";
+import { listarRankingMensal } from "../services/rankingService";
 
 export default function RankingMensal() {
   const [ranking, setRanking] = useState<any[]>([]);
@@ -14,8 +15,9 @@ export default function RankingMensal() {
   const carregarRanking = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/ranking");
-      setRanking(res.data);
+      // ✅ Endpoint correto: GET /ranking/:groupId
+      const dados = await listarRankingMensal(groupContext.groupId);
+      setRanking(dados);
     } catch (error) {
       setRanking([]);
     } finally {
@@ -52,6 +54,7 @@ export default function RankingMensal() {
           </View>
         ))
       ) : (
+        // Fallback mockado
         <>
           <View style={{ backgroundColor: "#1D2F6F", borderRadius: 18, padding: 20, marginBottom: 15 }}>
             <Text style={{ color: "#FFD700", fontSize: 22, fontWeight: "bold" }}>🥇 Pietra</Text>

@@ -2,6 +2,7 @@ import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View, ActivityIndicator } from "react-native";
 import api from "../services/api";
+import { groupContext } from "../services/groupContext";
 
 export default function Agenda() {
   const [eventos, setEventos] = useState<any[]>([]);
@@ -18,7 +19,9 @@ export default function Agenda() {
   const carregarEventos = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/reminder/list");
+      const groupId = groupContext.groupId;
+      // ✅ Endpoint correto com groupId dinâmico
+      const res = await api.get(`/reminder/${groupId}`);
       setEventos(res.data);
     } catch (error) {
       setEventos([]);
@@ -34,7 +37,12 @@ export default function Agenda() {
     }
     setAdicionando(true);
     try {
-      await api.post("/reminder/create", { title: novoEvento, date: novaData });
+      const groupId = groupContext.groupId;
+      await api.post("/reminder/create", {
+        title: novoEvento,
+        date: novaData,
+        groupId, // ✅ Envia o groupId junto ao criar
+      });
       setNovoEvento("");
       setNovaData("");
       setMostrarForm(false);
@@ -68,6 +76,7 @@ export default function Agenda() {
           </View>
         ))
       ) : (
+        // Fallback mockado
         <>
           <View style={{ backgroundColor: "#1D2F6F", padding: 20, borderRadius: 15, marginBottom: 15 }}>
             <Text style={{ color: "white", fontSize: 18, fontWeight: "bold" }}>📚 Entrega Trabalho de Grafos</Text>

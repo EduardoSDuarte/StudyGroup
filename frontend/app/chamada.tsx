@@ -1,7 +1,8 @@
 import { router } from "expo-router";
 import { useState } from "react";
 import { Alert, Linking, ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
-import api from "../services/api";
+import { groupContext } from "../services/groupContext";
+import { iniciarChamada, encerrarChamada, buscarChamadaAtiva } from "../services/rankingService";
 
 export default function Chamada() {
   const [loading, setLoading] = useState<string | null>(null);
@@ -9,12 +10,13 @@ export default function Chamada() {
   const handleIniciar = async () => {
     setLoading("iniciar");
     try {
-      const res = await api.post("/call/start");
-      const roomUrl = res.data.roomUrl;
+      // ✅ Envia groupId e abre a roomUrl do Jitsi retornada pelo backend
+      const res = await iniciarChamada(groupContext.groupId);
+      const roomUrl = res.roomUrl;
       if (roomUrl) {
         await Linking.openURL(roomUrl);
       }
-    } catch (error: any) {
+    } catch (error) {
       Alert.alert("Erro", "Não foi possível iniciar a chamada. Tente novamente!");
     } finally {
       setLoading(null);
@@ -24,14 +26,15 @@ export default function Chamada() {
   const handleEntrar = async () => {
     setLoading("entrar");
     try {
-      const res = await api.get("/call/active");
-      const roomUrl = res.data.roomUrl;
+      // ✅ Busca chamada ativa do grupo pelo groupId
+      const res = await buscarChamadaAtiva(groupContext.groupId);
+      const roomUrl = res.roomUrl;
       if (roomUrl) {
         await Linking.openURL(roomUrl);
       } else {
         Alert.alert("Aviso", "Nenhuma chamada ativa no momento.");
       }
-    } catch (error: any) {
+    } catch (error) {
       Alert.alert("Erro", "Não foi possível entrar na chamada. Tente novamente!");
     } finally {
       setLoading(null);
@@ -50,9 +53,10 @@ export default function Chamada() {
           onPress: async () => {
             setLoading("encerrar");
             try {
-              await api.post("/call/end");
+              // ✅ Envia groupId ao encerrar
+              await encerrarChamada(groupContext.groupId);
               Alert.alert("Sucesso", "Chamada encerrada!");
-            } catch (error: any) {
+            } catch (error) {
               Alert.alert("Erro", "Não foi possível encerrar a chamada. Tente novamente!");
             } finally {
               setLoading(null);

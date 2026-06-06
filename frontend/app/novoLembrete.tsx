@@ -1,7 +1,8 @@
 import { router } from "expo-router";
 import { useState } from "react";
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, ActivityIndicator } from "react-native";
-import api from "../services/api";
+import { groupContext } from "../services/groupContext";
+import { criarLembrete } from "../services/reminderService";
 
 export default function NovoLembrete() {
   const [titulo, setTitulo] = useState("");
@@ -15,11 +16,12 @@ export default function NovoLembrete() {
     }
     setLoading(true);
     try {
-      await api.post("/reminder/create", { title: titulo, date: data });
+      // ✅ Usa o service, passando o groupId automaticamente
+      await criarLembrete(groupContext.groupId, titulo, data);
       Alert.alert("Sucesso", "Lembrete salvo!", [
         { text: "OK", onPress: () => router.back() }
       ]);
-    } catch (error: any) {
+    } catch (error) {
       Alert.alert("Erro", "Não foi possível salvar o lembrete. Tente novamente!");
     } finally {
       setLoading(false);

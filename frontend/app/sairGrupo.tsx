@@ -1,7 +1,8 @@
 import { router } from "expo-router";
 import { useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
-import api from "../services/api";
+import { groupContext } from "../services/groupContext";
+import { sairDoGrupo } from "../services/groupService";
 
 export default function SairGrupo() {
   const [loading, setLoading] = useState(false);
@@ -18,11 +19,13 @@ export default function SairGrupo() {
           onPress: async () => {
             setLoading(true);
             try {
-              await api.post("/group/leave");
+              // ✅ Usa o service com groupId correto
+              await sairDoGrupo(groupContext.groupId);
+              groupContext.clear();
               Alert.alert("Sucesso", "Você saiu do grupo!", [
                 { text: "OK", onPress: () => router.push("/grupos") }
               ]);
-            } catch (error: any) {
+            } catch (error) {
               Alert.alert("Erro", "Não foi possível sair do grupo. Tente novamente!");
             } finally {
               setLoading(false);

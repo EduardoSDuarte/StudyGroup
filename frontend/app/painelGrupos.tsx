@@ -1,6 +1,8 @@
 import { router } from "expo-router";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
+// Endpoints admin (GET /admin/groups) ainda não existem no backend.
+// Tela mantida como visual para apresentação — RF29.
 export default function PainelGrupos() {
   const handleAcao = () => {
     Alert.alert("Aviso", "Funcionalidade disponível em breve pelo painel administrativo.");

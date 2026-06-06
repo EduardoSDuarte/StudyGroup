@@ -1,7 +1,8 @@
 import { router } from "expo-router";
 import { useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
-import api from "../services/api";
+import { groupContext } from "../services/groupContext";
+import { excluirGrupo } from "../services/groupService";
 
 export default function ExcluirGrupo() {
   const [loading, setLoading] = useState(false);
@@ -18,11 +19,13 @@ export default function ExcluirGrupo() {
           onPress: async () => {
             setLoading(true);
             try {
-              await api.delete("/group/remove-user");
+              // ✅ Endpoint correto com groupId — antes usava /group/remove-user (errado!)
+              await excluirGrupo(groupContext.groupId);
+              groupContext.clear();
               Alert.alert("Sucesso", "Grupo excluído!", [
                 { text: "OK", onPress: () => router.push("/grupos") }
               ]);
-            } catch (error: any) {
+            } catch (error) {
               Alert.alert("Erro", "Não foi possível excluir o grupo. Tente novamente!");
             } finally {
               setLoading(false);

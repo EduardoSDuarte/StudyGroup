@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import { useState } from "react";
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, ActivityIndicator } from "react-native";
-import api from "../services/api";
+import { recuperarSenha } from "../services/authService";
 
 export default function RecuperarSenha() {
   const [email, setEmail] = useState("");
@@ -14,11 +14,13 @@ export default function RecuperarSenha() {
     }
     setLoading(true);
     try {
-      await api.post("/auth/reset-password", { email });
+      // ✅ Usa o Firebase via authService (sendPasswordResetEmail)
+      // Não depende do backend — o Firebase envia o email diretamente
+      await recuperarSenha(email);
       Alert.alert("Sucesso", "Email de recuperação enviado!", [
         { text: "OK", onPress: () => router.back() }
       ]);
-    } catch (error: any) {
+    } catch (error) {
       Alert.alert("Erro", "Não foi possível enviar o email. Verifique e tente novamente!");
     } finally {
       setLoading(false);

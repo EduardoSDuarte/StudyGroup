@@ -1,7 +1,8 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
-import api from "../services/api";
+import { groupContext } from "../services/groupContext";
+import { listarMembros, removerMembro } from "../services/groupService";
 
 export default function RemoverMembro() {
   const [membros, setMembros] = useState<any[]>([]);
@@ -16,8 +17,9 @@ export default function RemoverMembro() {
   const carregarMembros = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/group/members");
-      setMembros(res.data);
+      // ✅ Usa o service com o groupId correto
+      const dados = await listarMembros(groupContext.groupId);
+      setMembros(dados);
     } catch (error) {
       setMembros([]);
     } finally {
@@ -41,11 +43,12 @@ export default function RemoverMembro() {
           onPress: async () => {
             setRemovendо(true);
             try {
-              await api.delete("/group/remove-user", { data: { userIdToRemove: selecionado } });
+              // ✅ groupId e userIdToRemove enviados corretamente
+              await removerMembro(groupContext.groupId, selecionado);
               Alert.alert("Sucesso", "Membro removido!", [
                 { text: "OK", onPress: () => router.back() }
               ]);
-            } catch (error: any) {
+            } catch (error) {
               Alert.alert("Erro", "Não foi possível remover o membro. Tente novamente!");
             } finally {
               setRemovendо(false);
@@ -91,6 +94,7 @@ export default function RemoverMembro() {
           </TouchableOpacity>
         ))
       ) : (
+        // Fallback mockado
         <>
           <View style={{ backgroundColor: "#1D2F6F", padding: 20, borderRadius: 15, marginBottom: 15 }}>
             <Text style={{ color: "white", fontSize: 18 }}>👤 Nique</Text>

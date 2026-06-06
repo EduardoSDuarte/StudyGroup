@@ -16,7 +16,10 @@ export default function Cadastro() {
     }
     setLoading(true);
     try {
+      // ✅ Cria conta no Firebase via authService
       await cadastro(email, senha);
+      // Nota: o campo "nome" pode ser salvo futuramente via PUT /auth/update
+      // se o backend suportar atualização de displayName
       router.push("/grupos");
     } catch (error: any) {
       Alert.alert("Erro", "Não foi possível criar a conta. Tente novamente!");

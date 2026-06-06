@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import { useState } from "react";
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, ActivityIndicator } from "react-native";
-import api from "../services/api";
+import { entrarPorConvite } from "../services/groupService";
 
 export default function EntrarGrupo() {
   const [codigo, setCodigo] = useState("");
@@ -14,11 +14,12 @@ export default function EntrarGrupo() {
     }
     setLoading(true);
     try {
-      await api.post("/group/join-invite", { inviteCode: codigo });
+      // ✅ Usa o service — backend gera solicitação pendente para o admin aprovar
+      await entrarPorConvite(codigo);
       Alert.alert("Sucesso", "Solicitação enviada! Aguarde o administrador aprovar.", [
         { text: "OK", onPress: () => router.push("/grupos") }
       ]);
-    } catch (error: any) {
+    } catch (error) {
       Alert.alert("Erro", "Código inválido ou expirado. Tente novamente!");
     } finally {
       setLoading(false);

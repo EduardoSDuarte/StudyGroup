@@ -2,11 +2,12 @@ import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
 import { auth } from "../services/firebase";
-import api from "../services/api";
+import { groupContext } from "../services/groupContext";
+import { listarHistoricoRanking } from "../services/rankingService";
 
 export default function Perfil() {
   const [perfil, setPerfil] = useState<any>(null);
-  const [ranking, setRanking] = useState<any[]>([]);
+  const [historico, setHistorico] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -16,12 +17,17 @@ export default function Perfil() {
   const carregarPerfil = async () => {
     setLoading(true);
     try {
+      // ✅ Dados básicos vêm direto do Firebase Auth
       const user = auth.currentUser;
-      setPerfil({ nome: user?.displayName || "Usuário", email: user?.email });
-      const res = await api.get("/ranking");
-      setRanking(res.data);
+      setPerfil({
+        nome: user?.displayName || "Usuário",
+        email: user?.email || "",
+      });
+      // ✅ Histórico de ranking com groupId correto
+      const dados = await listarHistoricoRanking(groupContext.groupId);
+      setHistorico(dados);
     } catch (error) {
-      setPerfil(null);
+      setHistorico([]);
     } finally {
       setLoading(false);
     }
@@ -45,10 +51,10 @@ export default function Perfil() {
         <>
           <View style={{ backgroundColor: "#1D2F6F", padding: 25, borderRadius: 15, marginBottom: 20 }}>
             <Text style={{ color: "white", fontSize: 22, fontWeight: "bold" }}>
-              {perfil?.nome || "Pietra Bezerra"}
+              {perfil?.nome || "Usuário"}
             </Text>
             <Text style={{ color: "#ccc", marginTop: 8 }}>
-              {perfil?.email || "pietra@email.com"}
+              {perfil?.email || ""}
             </Text>
           </View>
 
@@ -64,8 +70,8 @@ export default function Perfil() {
 
           <View style={{ backgroundColor: "#1D2F6F", padding: 20, borderRadius: 15, marginBottom: 25 }}>
             <Text style={{ color: "white", fontWeight: "bold" }}>📈 Histórico de Ranking</Text>
-            {ranking.length > 0 ? (
-              ranking.map((item: any, index: number) => (
+            {historico.length > 0 ? (
+              historico.map((item: any, index: number) => (
                 <Text key={index} style={{ color: "#ccc", marginTop: 10 }}>
                   {item.month} - {item.position}º Lugar
                 </Text>

@@ -1,8 +1,8 @@
 import { router } from "expo-router";
 import { useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
-import api from "../services/api";
-import { logout } from "../services/authService";
+import { excluirConta, logout } from "../services/authService";
+import { groupContext } from "../services/groupContext";
 
 export default function ExcluirConta() {
   const [loading, setLoading] = useState(false);
@@ -19,10 +19,12 @@ export default function ExcluirConta() {
           onPress: async () => {
             setLoading(true);
             try {
-              await api.delete("/auth/delete-account");
+              // ✅ Usa o service em vez de chamar api.delete direto
+              await excluirConta();
+              groupContext.clear();
               await logout();
               router.push("/login");
-            } catch (error: any) {
+            } catch (error) {
               Alert.alert("Erro", "Não foi possível excluir a conta. Tente novamente!");
             } finally {
               setLoading(false);

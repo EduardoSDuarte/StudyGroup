@@ -1,8 +1,8 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { ScrollView, Text, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
+import { ScrollView, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import api from "../services/api";
-import { auth } from "../services/firebase";
+import { groupContext } from "../services/groupContext";
 
 export default function Grupos() {
   const [grupos, setGrupos] = useState<any[]>([]);
@@ -15,14 +15,20 @@ export default function Grupos() {
   const carregarGrupos = async () => {
     setLoading(true);
     try {
-      const userId = auth.currentUser?.uid;
-      const res = await api.get(`/group/${userId}/members`);
+      // ✅ Endpoint correto para listar grupos do usuário logado
+      const res = await api.get("/group/my-groups");
       setGrupos(res.data);
     } catch (error) {
       setGrupos([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const abrirGrupo = (grupo: any) => {
+    // ✅ Salva o groupId e nome antes de navegar — todas as telas internas vão usar isso
+    groupContext.set(grupo.id, grupo.name);
+    router.push("/grupo");
   };
 
   return (
@@ -40,16 +46,20 @@ export default function Grupos() {
         grupos.map((grupo: any) => (
           <TouchableOpacity
             key={grupo.id}
-            onPress={() => router.push("/grupo")}
+            onPress={() => abrirGrupo(grupo)}
             style={{ backgroundColor: "#1D2F6F", padding: 20, borderRadius: 15, marginBottom: 15 }}
           >
             <Text style={{ color: "white", fontSize: 18, fontWeight: "bold" }}>{grupo.name}</Text>
-            <Text style={{ color: "#ccc", marginTop: 5 }}>{grupo.memberCount} membros</Text>
+            <Text style={{ color: "#ccc", marginTop: 5 }}>{grupo.memberCount ?? "?"} membros</Text>
           </TouchableOpacity>
         ))
       ) : (
+        // Fallback mockado — aparece só se a API não retornar nada
         <TouchableOpacity
-          onPress={() => router.push("/grupo")}
+          onPress={() => {
+            groupContext.set("mock-id-123", "Os Feras");
+            router.push("/grupo");
+          }}
           style={{ backgroundColor: "#1D2F6F", padding: 20, borderRadius: 15, marginBottom: 15 }}
         >
           <Text style={{ color: "white", fontSize: 18, fontWeight: "bold" }}>Os Feras</Text>
