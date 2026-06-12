@@ -1,28 +1,31 @@
-import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View, ActivityIndicator } from "react-native";
-import api from "../services/api";
+import { Calendar } from "react-native-calendars";
 import { groupContext } from "../services/groupContext";
+import { listarLembretes, criarLembrete } from "../services/reminderService";
 
 export default function Agenda() {
   const [eventos, setEventos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [adicionando, setAdicionando] = useState(false);
-  const [novoEvento, setNovoEvento] = useState("");
-  const [novaData, setNovaData] = useState("");
+  const [titulo, setTitulo] = useState("");
+  const [data, setData] = useState("");
+  const [hora, setHora] = useState("");
+  const [diaSelecionado, setDiaSelecionado] = useState("");
   const [mostrarForm, setMostrarForm] = useState(false);
 
-  useEffect(() => {
+  useFocusEffect(
+   useCallback(() => {
     carregarEventos();
-  }, []);
+  }, [])
+);
 
   const carregarEventos = async () => {
     setLoading(true);
     try {
-      const groupId = groupContext.groupId;
-      // ✅ Endpoint correto com groupId dinâmico
-      const res = await api.get(`/reminder/${groupId}`);
-      setEventos(res.data);
+      const dados = await listarLembretes(groupContext.groupId);
+      setEventos(dados);
     } catch (error) {
       setEventos([]);
     } finally {
@@ -31,106 +34,163 @@ export default function Agenda() {
   };
 
   const handleAdicionar = async () => {
-    if (!novoEvento || !novaData) {
-      Alert.alert("Erro", "Preencha o evento e a data!");
+    if (!titulo || !data || !hora) {
+      Alert.alert("Erro", "Preencha o título, a data e a hora!");
       return;
     }
+    const [dia, mes, ano] = data.split("/");
+    const datetime = `${ano}-${mes}-${dia}T${hora}:00`;
+
     setAdicionando(true);
     try {
-      const groupId = groupContext.groupId;
-      await api.post("/reminder/create", {
-        title: novoEvento,
-        date: novaData,
-        groupId, // ✅ Envia o groupId junto ao criar
-      });
-      setNovoEvento("");
-      setNovaData("");
+      await criarLembrete(groupContext.groupId, titulo, datetime);
+      setTitulo("");
+      setData("");
+      setHora("");
       setMostrarForm(false);
       carregarEventos();
-    } catch (error) {
-      Alert.alert("Erro", "Não foi possível adicionar o evento. Tente novamente!");
+    } catch (error: any) {
+      Alert.alert("Erro", error?.response?.data?.error || "Não foi possível adicionar o evento.");
     } finally {
       setAdicionando(false);
     }
   };
 
+  // Monta os marcadores do calendário
+  const marcadores = eventos.reduce((acc: any, evento: any) => {
+    const seconds = evento.datetime?._seconds;
+    if (seconds) {
+      const date = new Date(seconds * 1000).toISOString().split("T")[0];
+      acc[date] = { marked: true, dotColor: "#4F7CFF" };
+    }
+    return acc;
+  }, {});
+
+  // Filtra eventos do dia selecionado
+  const eventosDoDia = eventos.filter((evento: any) => {
+    const seconds = evento.datetime?._seconds;
+    if (!seconds || !diaSelecionado) return false;
+    const date = new Date(seconds * 1000).toISOString().split("T")[0];
+    return date === diaSelecionado;
+  });
+
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: "#0B1E4D" }}
-      contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+      contentContainerStyle={{ paddingBottom: 40 }}
     >
-      <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 40, marginBottom: 20 }}>
-        <Text style={{ color: "#4F7CFF", fontSize: 18, fontWeight: "bold" }}>← Voltar</Text>
-      </TouchableOpacity>
-      <Text style={{ color: "white", fontSize: 30, fontWeight: "bold", marginBottom: 30 }}>
-        Agenda Compartilhada 📅
-      </Text>
+      <View style={{ padding: 20 }}>
+        <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 40, marginBottom: 20 }}>
+          <Text style={{ color: "#4F7CFF", fontSize: 18, fontWeight: "bold" }}>← Voltar</Text>
+        </TouchableOpacity>
+        <Text style={{ color: "white", fontSize: 30, fontWeight: "bold", marginBottom: 20 }}>
+          Agenda 📅
+        </Text>
+      </View>
 
       {loading ? (
-        <ActivityIndicator color="#4F7CFF" size="large" />
-      ) : eventos.length > 0 ? (
-        eventos.map((evento: any) => (
-          <View key={evento.id} style={{ backgroundColor: "#1D2F6F", padding: 20, borderRadius: 15, marginBottom: 15 }}>
-            <Text style={{ color: "white", fontSize: 18, fontWeight: "bold" }}>{evento.title}</Text>
-            <Text style={{ color: "#ccc", marginTop: 8 }}>{evento.date}</Text>
-          </View>
-        ))
+        <ActivityIndicator color="#4F7CFF" size="large" style={{ marginTop: 20 }} />
       ) : (
-        // Fallback mockado
         <>
-          <View style={{ backgroundColor: "#1D2F6F", padding: 20, borderRadius: 15, marginBottom: 15 }}>
-            <Text style={{ color: "white", fontSize: 18, fontWeight: "bold" }}>📚 Entrega Trabalho de Grafos</Text>
-            <Text style={{ color: "#ccc", marginTop: 8 }}>10/06/2026 - 23:59</Text>
-          </View>
-          <View style={{ backgroundColor: "#1D2F6F", padding: 20, borderRadius: 15, marginBottom: 15 }}>
-            <Text style={{ color: "white", fontSize: 18, fontWeight: "bold" }}>🤖 Prova de IA</Text>
-            <Text style={{ color: "#ccc", marginTop: 8 }}>15/06/2026 - 19:00</Text>
-          </View>
-          <View style={{ backgroundColor: "#1D2F6F", padding: 20, borderRadius: 15, marginBottom: 15 }}>
-            <Text style={{ color: "white", fontSize: 18, fontWeight: "bold" }}>🎤 Apresentação do Projeto</Text>
-            <Text style={{ color: "#ccc", marginTop: 8 }}>20/06/2026 - 08:00</Text>
+          <Calendar
+            theme={{
+              backgroundColor: "#0B1E4D",
+              calendarBackground: "#1D2F6F",
+              textSectionTitleColor: "#4F7CFF",
+              selectedDayBackgroundColor: "#4F7CFF",
+              selectedDayTextColor: "white",
+              todayTextColor: "#4F7CFF",
+              dayTextColor: "white",
+              textDisabledColor: "#555",
+              arrowColor: "#4F7CFF",
+              monthTextColor: "white",
+              indicatorColor: "#4F7CFF",
+            }}
+            markedDates={{
+              ...marcadores,
+              ...(diaSelecionado ? {
+                [diaSelecionado]: {
+                  ...(marcadores[diaSelecionado] || {}),
+                  selected: true,
+                  selectedColor: "#4F7CFF",
+                }
+              } : {})
+            }}
+            onDayPress={(day: any) => setDiaSelecionado(day.dateString)}
+          />
+
+          <View style={{ padding: 20 }}>
+            {diaSelecionado ? (
+              <>
+                <Text style={{ color: "white", fontSize: 18, fontWeight: "bold", marginBottom: 15 }}>
+                  📋 Eventos em {diaSelecionado}
+                </Text>
+                {eventosDoDia.length > 0 ? (
+                  eventosDoDia.map((evento: any) => (
+                    <View key={evento.reminderId} style={{ backgroundColor: "#1D2F6F", padding: 15, borderRadius: 12, marginBottom: 10 }}>
+                      <Text style={{ color: "white", fontWeight: "bold" }}>{evento.title}</Text>
+                      <Text style={{ color: "#ccc", marginTop: 5 }}>
+                        {new Date(evento.datetime._seconds * 1000).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                      </Text>
+                    </View>
+                  ))
+                ) : (
+                  <Text style={{ color: "#ccc" }}>Nenhum evento neste dia.</Text>
+                )}
+              </>
+            ) : (
+              <Text style={{ color: "#ccc", textAlign: "center" }}>Toque em um dia para ver os eventos.</Text>
+            )}
+
+            {mostrarForm && (
+              <View style={{ marginTop: 20 }}>
+                <TextInput
+                  placeholder="Título do evento"
+                  placeholderTextColor="#999"
+                  value={titulo}
+                  onChangeText={setTitulo}
+                  maxLength={100}
+                  style={{ backgroundColor: "white", borderRadius: 12, padding: 15, marginBottom: 10 }}
+                />
+                <TextInput
+                  placeholder="Data (ex: 10/06/2026)"
+                  placeholderTextColor="#999"
+                  value={data}
+                  onChangeText={setData}
+                  style={{ backgroundColor: "white", borderRadius: 12, padding: 15, marginBottom: 10 }}
+                />
+                <TextInput
+                  placeholder="Hora (ex: 14:30)"
+                  placeholderTextColor="#999"
+                  value={hora}
+                  onChangeText={setHora}
+                  style={{ backgroundColor: "white", borderRadius: 12, padding: 15, marginBottom: 10 }}
+                />
+                <TouchableOpacity
+                  onPress={handleAdicionar}
+                  disabled={adicionando}
+                  style={{ backgroundColor: "#2ECC71", padding: 15, borderRadius: 12 }}
+                >
+                  {adicionando ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <Text style={{ color: "white", textAlign: "center", fontWeight: "bold" }}>Salvar Evento</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
+
+            <TouchableOpacity
+              onPress={() => setMostrarForm(!mostrarForm)}
+              style={{ backgroundColor: "#4F7CFF", padding: 15, borderRadius: 12, marginTop: 15 }}
+            >
+              <Text style={{ color: "white", textAlign: "center", fontWeight: "bold" }}>
+                {mostrarForm ? "Cancelar" : "+ Adicionar Evento"}
+              </Text>
+            </TouchableOpacity>
           </View>
         </>
       )}
-
-      {mostrarForm && (
-        <View style={{ marginBottom: 15 }}>
-          <TextInput
-            placeholder="Nome do evento"
-            placeholderTextColor="#999"
-            value={novoEvento}
-            onChangeText={setNovoEvento}
-            style={{ backgroundColor: "white", borderRadius: 12, padding: 15, marginBottom: 10 }}
-          />
-          <TextInput
-            placeholder="Data (ex: 10/06/2026 - 19:00)"
-            placeholderTextColor="#999"
-            value={novaData}
-            onChangeText={setNovaData}
-            style={{ backgroundColor: "white", borderRadius: 12, padding: 15, marginBottom: 10 }}
-          />
-          <TouchableOpacity
-            onPress={handleAdicionar}
-            disabled={adicionando}
-            style={{ backgroundColor: "#2ECC71", padding: 15, borderRadius: 12 }}
-          >
-            {adicionando ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text style={{ color: "white", textAlign: "center", fontWeight: "bold" }}>Salvar Evento</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      )}
-
-      <TouchableOpacity
-        onPress={() => setMostrarForm(!mostrarForm)}
-        style={{ backgroundColor: "#4F7CFF", padding: 15, borderRadius: 12 }}
-      >
-        <Text style={{ color: "white", textAlign: "center", fontWeight: "bold" }}>
-          {mostrarForm ? "Cancelar" : "+ Adicionar Evento"}
-        </Text>
-      </TouchableOpacity>
     </ScrollView>
   );
 }

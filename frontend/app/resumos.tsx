@@ -1,5 +1,5 @@
-import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { groupContext } from "../services/groupContext";
 import { listarResumos } from "../services/summaryService";
@@ -8,10 +8,11 @@ export default function Resumos() {
   const [resumos, setResumos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  useFocusEffect(
+    useCallback(() => {
     carregarResumos();
-  }, []);
-
+   }, [])
+  );
   const carregarResumos = async () => {
     setLoading(true);
     try {
@@ -27,7 +28,7 @@ export default function Resumos() {
 
   const abrirResumo = (resumo: any) => {
     // ✅ Salva o summaryId antes de navegar, igual ao groupId nos grupos
-    groupContext.setSummaryId(resumo.id);
+    groupContext.setSummaryId(resumo.summaryId);
     router.push("/resumoDetalhe");
   };
 
@@ -48,7 +49,7 @@ export default function Resumos() {
       ) : resumos.length > 0 ? (
         resumos.map((resumo: any) => (
           <TouchableOpacity
-            key={resumo.id}
+            key={resumo.summaryId}
             onPress={() => abrirResumo(resumo)}
             style={{ backgroundColor: "#1D2F6F", padding: 20, borderRadius: 15, marginBottom: 15 }}
           >
@@ -57,23 +58,10 @@ export default function Resumos() {
           </TouchableOpacity>
         ))
       ) : (
-        // Fallback mockado
-        <>
-          <TouchableOpacity
-            onPress={() => router.push("/resumoDetalhe")}
-            style={{ backgroundColor: "#1D2F6F", padding: 20, borderRadius: 15, marginBottom: 15 }}
-          >
-            <Text style={{ color: "white", fontSize: 18, fontWeight: "bold" }}>Matemática Discreta</Text>
-            <Text style={{ color: "#ccc", marginTop: 5 }}>Adicionado por Nique</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => router.push("/resumoDetalhe")}
-            style={{ backgroundColor: "#1D2F6F", padding: 20, borderRadius: 15, marginBottom: 15 }}
-          >
-            <Text style={{ color: "white", fontSize: 18, fontWeight: "bold" }}>Estrutura de Dados</Text>
-            <Text style={{ color: "#ccc", marginTop: 5 }}>Adicionado por Pietra</Text>
-          </TouchableOpacity>
-        </>
+        
+        <Text style={{ color: "#ccc" }}>
+          Nenhum resumo encontrado.
+        </Text>
       )}
 
       <TouchableOpacity

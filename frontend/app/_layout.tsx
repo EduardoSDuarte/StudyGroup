@@ -2,6 +2,8 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
+import { useState, useEffect, useRef } from "react";
+import { TimerContext } from "../services/timerContext";
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -11,9 +13,26 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const [tempo, setTempo] = useState(0);
+  const [rodando, setRodando] = useState(false);
+  const [sessaoAtiva, setSessaoAtiva] = useState(false);
+  const intervaloRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (rodando) {
+      intervaloRef.current = setInterval(() => {
+        setTempo(t => t + 1);
+      }, 1000);
+    } else {
+      clearInterval(intervaloRef.current);
+    }
+    return () => clearInterval(intervaloRef.current);
+  }, [rodando]);
+
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <TimerContext.Provider value={{ tempo, rodando, sessaoAtiva, setTempo, setRodando, setSessaoAtiva }}> 
+     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         {/* Telas do template */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -56,5 +75,6 @@ export default function RootLayout() {
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
+   </TimerContext.Provider>
   );
 }

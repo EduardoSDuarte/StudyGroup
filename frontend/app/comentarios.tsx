@@ -1,8 +1,8 @@
-import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { router,  useFocusEffect  } from "expo-router";
+import { useCallback, useState } from "react";
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View, ActivityIndicator } from "react-native";
 import { groupContext } from "../services/groupContext";
-import { listarComentarios, adicionarComentario } from "../services/summaryService";
+import { detalheResumo, adicionarComentario } from "../services/summaryService";
 
 export default function Comentarios() {
   const [comentarios, setComentarios] = useState<any[]>([]);
@@ -10,16 +10,17 @@ export default function Comentarios() {
   const [loading, setLoading] = useState(true);
   const [enviando, setEnviando] = useState(false);
 
-  useEffect(() => {
+  useFocusEffect(
+    useCallback(() => {
     carregarComentarios();
-  }, []);
+   }, [])
+  );
 
   const carregarComentarios = async () => {
     setLoading(true);
     try {
-      // ✅ Endpoint correto: /summary/:summaryId/comments
-      const dados = await listarComentarios(groupContext.summaryId);
-      setComentarios(dados);
+      const dados = await detalheResumo(groupContext.summaryId);
+      setComentarios(dados.comments || []);
     } catch (error) {
       setComentarios([]);
     } finally {
@@ -34,7 +35,6 @@ export default function Comentarios() {
     }
     setEnviando(true);
     try {
-      // ✅ Endpoint correto: /summary/:summaryId/comment
       await adicionarComentario(groupContext.summaryId, novoComentario);
       setNovoComentario("");
       carregarComentarios();
@@ -60,24 +60,16 @@ export default function Comentarios() {
       {loading ? (
         <ActivityIndicator color="#4F7CFF" size="large" />
       ) : comentarios.length > 0 ? (
-        comentarios.map((comentario: any) => (
-          <View key={comentario.id} style={{ backgroundColor: "#1D2F6F", padding: 15, borderRadius: 15, marginBottom: 10 }}>
+        comentarios.map((comentario: any, index: number) => (
+          <View key={comentario.commentId || index} style={{ backgroundColor: "#1D2F6F", padding: 15, borderRadius: 15, marginBottom: 10 }}>
             <Text style={{ color: "white", fontWeight: "bold" }}>{comentario.authorName}</Text>
-            <Text style={{ color: "#ccc", marginTop: 5 }}>{comentario.content}</Text>
+            <Text style={{ color: "#ccc", marginTop: 5 }}>{comentario.text}</Text>
           </View>
         ))
       ) : (
-        // Fallback mockado
-        <>
-          <View style={{ backgroundColor: "#1D2F6F", padding: 15, borderRadius: 15, marginBottom: 10 }}>
-            <Text style={{ color: "white", fontWeight: "bold" }}>João</Text>
-            <Text style={{ color: "#ccc", marginTop: 5 }}>Excelente resumo!</Text>
-          </View>
-          <View style={{ backgroundColor: "#1D2F6F", padding: 15, borderRadius: 15, marginBottom: 10 }}>
-            <Text style={{ color: "white", fontWeight: "bold" }}>Pietra</Text>
-            <Text style={{ color: "#ccc", marginTop: 5 }}>Gostei da explicação sobre vértices.</Text>
-          </View>
-        </>
+        <Text style={{ color: "#ccc" }}>
+          Nenhum comentário foi feito.
+        </Text>
       )}
 
       <TextInput

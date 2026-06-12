@@ -7,6 +7,23 @@ export default function EntrarGrupo() {
   const [codigo, setCodigo] = useState("");
   const [loading, setLoading] = useState(false);
 
+//  const handleEntrar = async () => {
+//    if (!codigo) {
+//      alert("Digite o código do convite!");
+//      return;
+//    }
+//    setLoading(true);
+//    try {
+//      await entrarPorConvite(codigo);
+//      alert("Solicitação enviada! Aguarde o administrador aprovar.");
+//      router.push("/grupos");
+//    } catch (error) {
+//      alert("Código inválido ou expirado. Tente novamente!");
+//    } finally {
+//      setLoading(false);
+//    }
+//  };
+
   const handleEntrar = async () => {
     if (!codigo) {
       Alert.alert("Erro", "Digite o código do convite!");
@@ -24,7 +41,7 @@ export default function EntrarGrupo() {
     } finally {
       setLoading(false);
     }
-  };
+ };
 
   return (
     <ScrollView

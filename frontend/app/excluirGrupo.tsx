@@ -8,6 +8,27 @@ export default function ExcluirGrupo() {
   const [loading, setLoading] = useState(false);
 
   const handleExcluir = async () => {
+    console.log("BOTÃO EXCLUIR CLICADO");
+    console.log("ABRINDO ALERT");
+
+//    const confirmou = window.confirm("Tem certeza? Essa ação não pode ser desfeita!");
+//    
+//    if (!confirmou) return;
+    
+//    console.log("CONFIRMOU EXCLUSÃO");
+//    setLoading(true);
+//    try {
+//      await excluirGrupo(groupContext.groupId);
+//      groupContext.clear();
+//      alert("Grupo excluído com sucesso!");
+//      router.push("/grupos");
+//    } catch (error) {
+//      alert("Não foi possível excluir o grupo. Tente novamente!");
+//    } finally {
+//      setLoading(false);
+//    }
+//  };
+
     Alert.alert(
       "Confirmar exclusão",
       "Tem certeza? Essa ação não pode ser desfeita!",
@@ -17,6 +38,8 @@ export default function ExcluirGrupo() {
           text: "Excluir",
           style: "destructive",
           onPress: async () => {
+            console.log("CONFIRMOU EXCLUSÃO");
+            
             setLoading(true);
             try {
               // ✅ Endpoint correto com groupId — antes usava /group/remove-user (errado!)
@@ -25,8 +48,8 @@ export default function ExcluirGrupo() {
               Alert.alert("Sucesso", "Grupo excluído!", [
                 { text: "OK", onPress: () => router.push("/grupos") }
               ]);
-            } catch (error) {
-              Alert.alert("Erro", "Não foi possível excluir o grupo. Tente novamente!");
+            } catch (error: any) {
+              Alert.alert("Ops!", error?.response?.data?.error || "Ação não permitida.");
             } finally {
               setLoading(false);
             }
@@ -34,10 +57,10 @@ export default function ExcluirGrupo() {
         }
       ]
     );
-  };
+  }
 
-  return (
-    <ScrollView
+ return (
+   <ScrollView
       style={{ flex: 1, backgroundColor: "#0B1E4D" }}
       contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
     >
@@ -65,4 +88,4 @@ export default function ExcluirGrupo() {
       </TouchableOpacity>
     </ScrollView>
   );
-}
+ }

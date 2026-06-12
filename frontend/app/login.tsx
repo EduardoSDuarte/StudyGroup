@@ -16,8 +16,18 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       // ✅ Autentica pelo Firebase via authService — só navega se o login der certo
-      await login(email, senha);
-      router.push("/grupos");
+  const user = await login(email, senha);
+
+  if (!user.emailVerified) {
+    Alert.alert(
+      "Email não verificado",
+      "Verifique o link enviado para seu email antes de entrar."
+    );
+
+    return;
+  }
+  router.push("/grupos");
+  
     } catch (error: any) {
       Alert.alert("Erro", "Email ou senha incorretos!");
     } finally {

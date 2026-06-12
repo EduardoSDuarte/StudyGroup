@@ -1,31 +1,23 @@
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
 import { groupContext } from "../services/groupContext";
 import { iniciarSessao, encerrarSessao } from "../services/rankingService";
+import { useTimer } from "../services/timerContext";
+
 
 export default function HomeScreen() {
-  const [tempo, setTempo] = useState(0);
-  const [rodando, setRodando] = useState(false);
-  const [sessaoAtiva, setSessaoAtiva] = useState(false);
-
-  useEffect(() => {
-    let intervalo: any;
-    if (rodando) {
-      intervalo = setInterval(() => {
-        setTempo((valorAnterior) => valorAnterior + 1);
-      }, 1000);
-    }
-    return () => clearInterval(intervalo);
-  }, [rodando]);
+  const { tempo, rodando, sessaoAtiva, setTempo, setRodando, setSessaoAtiva } = useTimer();
 
   const handleIniciar = async () => {
+    console.log("handleIniciar chamado, groupId:", groupContext.groupId);
     try {
       // ✅ Endpoint correto: /session/start com groupId
       await iniciarSessao(groupContext.groupId);
+      console.log("sessão iniciada com sucesso");
       setRodando(true);
       setSessaoAtiva(true);
     } catch (error) {
+      console.log("erro ao iniciar:", error);
       Alert.alert("Erro", "Não foi possível iniciar a sessão. Tente novamente!");
     }
   };
@@ -33,10 +25,15 @@ export default function HomeScreen() {
   const handlePausar = async () => {
     try {
       // ✅ Endpoint correto: /session/stop — backend calcula duração e atualiza ranking
-      await encerrarSessao(groupContext.groupId);
+      console.log("parando sessão, groupId:", groupContext.groupId);
+
+      const resultado =await encerrarSessao(groupContext.groupId);
+      console.log("resultado:", JSON.stringify(resultado));
+
       setRodando(false);
       setSessaoAtiva(false);
     } catch (error) {
+      console.log("erro ao parar:", error);
       Alert.alert("Erro", "Não foi possível pausar a sessão. Tente novamente!");
     }
   };

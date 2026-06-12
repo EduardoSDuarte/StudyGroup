@@ -17,7 +17,15 @@ export default function Cadastro() {
     setLoading(true);
     try {
       // ✅ Cria conta no Firebase via authService
-      await cadastro(email, senha);
+      await cadastro(nome, email, senha);
+
+      Alert.alert(
+        "Verifique seu email",
+        "Enviamos um link de confirmação para seu email. Verifique antes de fazer login."
+      );
+
+      router.replace("/login");
+
       // Nota: o campo "nome" pode ser salvo futuramente via PUT /auth/update
       // se o backend suportar atualização de displayName
       router.push("/grupos");

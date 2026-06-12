@@ -1,22 +1,24 @@
-import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
 import { groupContext } from "../services/groupContext";
-import { listarRankingMensal } from "../services/rankingService";
+import { listarRankingDiario } from "../services/rankingService";
 
 export default function RankingDiario() {
   const [ranking, setRanking] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  useFocusEffect(
+    useCallback(() => {
     carregarRanking();
-  }, []);
+   }, [])
+  );
 
   const carregarRanking = async () => {
     setLoading(true);
     try {
       // ✅ Endpoint correto com groupId — backend filtra pelo dia
-      const dados = await listarRankingMensal(groupContext.groupId);
+      const dados = await listarRankingDiario(groupContext.groupId);
       setRanking(dados);
     } catch (error) {
       setRanking([]);
@@ -27,6 +29,13 @@ export default function RankingDiario() {
 
   const medalhas = ["🥇", "🥈", "🥉"];
   const cores = ["#FFD700", "#C0C0C0", "#CD7F32"];
+
+  const formatarTempo = (segundos: number) => {
+  const h = Math.floor(segundos / 3600);
+  const m = Math.floor((segundos % 3600) / 60);
+  const s = segundos % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+};
 
   return (
     <ScrollView
@@ -49,26 +58,15 @@ export default function RankingDiario() {
               {medalhas[index] || `${index + 1}º`} {item.userName}
             </Text>
             <Text style={{ color: index < 3 ? "white" : "#ccc", marginTop: 8, fontSize: index < 3 ? 16 : 14 }}>
-              {index < 3 ? "Tempo estudado: " : ""}{item.studyTime}
+              {index < 3 ? "Tempo estudado: " : ""}{formatarTempo(item.totalTime)}
             </Text>
           </View>
         ))
       ) : (
         // Fallback mockado
-        <>
-          <View style={{ backgroundColor: "#1D2F6F", borderRadius: 18, padding: 20, marginBottom: 15 }}>
-            <Text style={{ color: "#FFD700", fontSize: 22, fontWeight: "bold" }}>🥇 Pietra</Text>
-            <Text style={{ color: "white", marginTop: 8, fontSize: 16 }}>Tempo estudado: 04h 12min</Text>
-          </View>
-          <View style={{ backgroundColor: "#1D2F6F", borderRadius: 18, padding: 20, marginBottom: 15 }}>
-            <Text style={{ color: "#C0C0C0", fontSize: 22, fontWeight: "bold" }}>🥈 Nique</Text>
-            <Text style={{ color: "white", marginTop: 8, fontSize: 16 }}>Tempo estudado: 03h 40min</Text>
-          </View>
-          <View style={{ backgroundColor: "#1D2F6F", borderRadius: 18, padding: 20, marginBottom: 15 }}>
-            <Text style={{ color: "#CD7F32", fontSize: 22, fontWeight: "bold" }}>🥉 João</Text>
-            <Text style={{ color: "white", marginTop: 8, fontSize: 16 }}>Tempo estudado: 02h 55min</Text>
-          </View>
-        </>
+      <Text style={{ color: "#ccc" }}>
+        Nenhum ranking disponível.
+      </Text>
       )}
     </ScrollView>
   );

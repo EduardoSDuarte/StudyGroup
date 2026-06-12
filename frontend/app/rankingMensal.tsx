@@ -1,5 +1,5 @@
-import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
 import { groupContext } from "../services/groupContext";
 import { listarRankingMensal } from "../services/rankingService";
@@ -8,9 +8,11 @@ export default function RankingMensal() {
   const [ranking, setRanking] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  useFocusEffect(
+    useCallback(() => {
     carregarRanking();
-  }, []);
+   }, [])
+  );
 
   const carregarRanking = async () => {
     setLoading(true);
@@ -54,26 +56,9 @@ export default function RankingMensal() {
           </View>
         ))
       ) : (
-        // Fallback mockado
-        <>
-          <View style={{ backgroundColor: "#1D2F6F", borderRadius: 18, padding: 20, marginBottom: 15 }}>
-            <Text style={{ color: "#FFD700", fontSize: 22, fontWeight: "bold" }}>🥇 Pietra</Text>
-            <Text style={{ color: "white", marginTop: 8 }}>72 horas estudadas</Text>
-          </View>
-          <View style={{ backgroundColor: "#1D2F6F", borderRadius: 18, padding: 20, marginBottom: 15 }}>
-            <Text style={{ color: "#C0C0C0", fontSize: 22, fontWeight: "bold" }}>🥈 Nique</Text>
-            <Text style={{ color: "white", marginTop: 8 }}>69 horas estudadas</Text>
-          </View>
-          <View style={{ backgroundColor: "#1D2F6F", borderRadius: 18, padding: 20, marginBottom: 15 }}>
-            <Text style={{ color: "#CD7F32", fontSize: 22, fontWeight: "bold" }}>🥉 João</Text>
-            <Text style={{ color: "white", marginTop: 8 }}>61 horas estudadas</Text>
-          </View>
-          <View style={{ backgroundColor: "#1D2F6F", borderRadius: 18, padding: 20 }}>
-            <Text style={{ color: "white", fontSize: 18 }}>4º Maria — 54h</Text>
-            <Text style={{ color: "white", fontSize: 18, marginTop: 10 }}>5º Pedro — 48h</Text>
-            <Text style={{ color: "white", fontSize: 18, marginTop: 10 }}>6º Ana — 42h</Text>
-          </View>
-        </>
+        <Text style={{ color: "#ccc" }}>
+          Nenhum ranking disponível.
+        </Text>
       )}
     </ScrollView>
   );

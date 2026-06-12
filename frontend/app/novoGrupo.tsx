@@ -15,12 +15,13 @@ export default function NovoGrupo() {
     }
     setLoading(true);
     try {
-      // ✅ Usa o service — backend aceita só o name por enquanto
       await criarGrupo(nome);
       Alert.alert("Sucesso", "Grupo criado!", [
         { text: "OK", onPress: () => router.push("/grupos") }
       ]);
-    } catch (error) {
+    } catch (error: any) {
+      console.log("Erro ao criar grupo:", JSON.stringify(error?.response?.data));
+      console.log("Status:", error?.response?.status);
       Alert.alert("Erro", "Não foi possível criar o grupo. Tente novamente!");
     } finally {
       setLoading(false);

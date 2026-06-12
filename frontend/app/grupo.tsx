@@ -1,5 +1,5 @@
-import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
 import { groupContext } from "../services/groupContext";
 import { listarRankingMensal } from "../services/rankingService";
@@ -11,9 +11,11 @@ export default function Grupo() {
   // ✅ Pega o nome do grupo salvo no groupContext
   const nomeDoGrupo = groupContext.groupName || "Meu Grupo";
 
-  useEffect(() => {
+  useFocusEffect(
+    useCallback(() => {
     carregarRanking();
-  }, []);
+   }, [])
+  );
 
   const carregarRanking = async () => {
     setLoading(true);
@@ -33,9 +35,14 @@ export default function Grupo() {
       style={{ flex: 1, backgroundColor: "#0B1E4D" }}
       contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
     >
-      <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 40, marginBottom: 20 }}>
-        <Text style={{ color: "#4F7CFF", fontSize: 18, fontWeight: "bold" }}>← Voltar</Text>
-      </TouchableOpacity>
+    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 40, marginBottom: 20 }}>
+  <TouchableOpacity onPress={() => router.back()}>
+    <Text style={{ color: "#4F7CFF", fontSize: 18, fontWeight: "bold" }}>← Voltar</Text>
+  </TouchableOpacity>
+  <TouchableOpacity onPress={() => router.push("/notificacoes")}>
+    <Text style={{ fontSize: 24 }}>🔔</Text>
+  </TouchableOpacity>
+</View>
 
       {/* ✅ Nome do grupo vem do groupContext, não mais fixo */}
       <Text style={{ color: "white", fontSize: 30, fontWeight: "bold", marginBottom: 25 }}>
@@ -53,11 +60,9 @@ export default function Grupo() {
             </Text>
           ))
         ) : (
-          // Fallback mockado enquanto a API não responde
-          <>
-            <Text style={{ color: "#FFD700" }}>🥇 Nique — 02:15:30</Text>
-            <Text style={{ color: "#C0C0C0", marginTop: 5 }}>🥈 Pietra — 01:48:12</Text>
-          </>
+          <Text style={{ color: "#ccc" }}>
+            Nenhum ranking disponível.
+          </Text>
         )}
       </View>
 

@@ -1,5 +1,5 @@
-import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
 import { groupContext } from "../services/groupContext";
 import { detalheResumo, excluirResumo } from "../services/summaryService";
@@ -9,9 +9,11 @@ export default function ResumoDetalhe() {
   const [loading, setLoading] = useState(true);
   const [excluindo, setExcluindo] = useState(false);
 
-  useEffect(() => {
+  useFocusEffect(
+    useCallback(() => {
     carregarDetalhe();
-  }, []);
+   }, [])
+  );
 
   const carregarDetalhe = async () => {
     setLoading(true);

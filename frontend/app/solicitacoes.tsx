@@ -1,5 +1,5 @@
-import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
 import { groupContext } from "../services/groupContext";
 import { listarSolicitacoes, aprovarSolicitacao, recusarSolicitacao } from "../services/groupService";
@@ -8,12 +8,15 @@ export default function Solicitacoes() {
   const [solicitacoes, setSolicitacoes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  useFocusEffect(
+    useCallback(() => {
     carregarSolicitacoes();
-  }, []);
+   }, [])
+  );
 
   const carregarSolicitacoes = async () => {
     setLoading(true);
+    console.log("groupId ao carregar solicitações:", groupContext.groupId);
     try {
       // ✅ Endpoint correto com groupId
       const dados = await listarSolicitacoes(groupContext.groupId);
@@ -25,10 +28,10 @@ export default function Solicitacoes() {
     }
   };
 
-  const handleAceitar = async (userId: string) => {
+  const handleAceitar = async (requestId: string) => {
     try {
       // ✅ Endpoint correto: approve-request
-      await aprovarSolicitacao(groupContext.groupId, userId);
+      await aprovarSolicitacao(groupContext.groupId, requestId);
       Alert.alert("Sucesso", "Solicitação aceita!");
       carregarSolicitacoes();
     } catch (error) {
@@ -36,10 +39,10 @@ export default function Solicitacoes() {
     }
   };
 
-  const handleRecusar = async (userId: string) => {
+  const handleRecusar = async (requestId: string) => {
     try {
       // ✅ Endpoint correto: reject-request
-      await recusarSolicitacao(groupContext.groupId, userId);
+      await recusarSolicitacao(groupContext.groupId, requestId);
       Alert.alert("Sucesso", "Solicitação recusada!");
       carregarSolicitacoes();
     } catch (error) {
@@ -67,15 +70,18 @@ export default function Solicitacoes() {
             <Text style={{ color: "white", fontSize: 18, fontWeight: "bold", marginBottom: 15 }}>
               {solicitacao.userName}
             </Text>
+            <Text style={{ color: "#ccc", marginBottom: 15 }}>
+              {solicitacao.userEmail}
+            </Text>  
             <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
               <TouchableOpacity
-                onPress={() => handleAceitar(solicitacao.userId)}
+                onPress={() => handleAceitar(solicitacao.requestId)}
                 style={{ backgroundColor: "#2ECC71", width: "48%", padding: 12, borderRadius: 10 }}
               >
                 <Text style={{ color: "white", textAlign: "center", fontWeight: "bold" }}>Aceitar</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => handleRecusar(solicitacao.userId)}
+                onPress={() => handleRecusar(solicitacao.requestId)}
                 style={{ backgroundColor: "#E74C3C", width: "48%", padding: 12, borderRadius: 10 }}
               >
                 <Text style={{ color: "white", textAlign: "center", fontWeight: "bold" }}>Recusar</Text>
@@ -84,18 +90,9 @@ export default function Solicitacoes() {
           </View>
         ))
       ) : (
-        // Fallback mockado
-        <View style={{ backgroundColor: "#1D2F6F", padding: 20, borderRadius: 15, marginBottom: 15 }}>
-          <Text style={{ color: "white", fontSize: 18, fontWeight: "bold", marginBottom: 15 }}>João Silva</Text>
-          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-            <TouchableOpacity style={{ backgroundColor: "#2ECC71", width: "48%", padding: 12, borderRadius: 10 }}>
-              <Text style={{ color: "white", textAlign: "center", fontWeight: "bold" }}>Aceitar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={{ backgroundColor: "#E74C3C", width: "48%", padding: 12, borderRadius: 10 }}>
-              <Text style={{ color: "white", textAlign: "center", fontWeight: "bold" }}>Recusar</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        <Text style={{ color: "#ccc", textAlign: "center", marginTop: 20 }}>
+          Nenhuma solicitação pendente.
+        </Text>
       )}
     </ScrollView>
   );

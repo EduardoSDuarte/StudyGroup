@@ -1,5 +1,5 @@
-import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
 import { groupContext } from "../services/groupContext";
 import { listarMembros, removerMembro } from "../services/groupService";
@@ -10,9 +10,11 @@ export default function RemoverMembro() {
   const [loading, setLoading] = useState(true);
   const [removendo, setRemovendо] = useState(false);
 
-  useEffect(() => {
+  useFocusEffect(
+    useCallback(() => {
     carregarMembros();
-  }, []);
+   }, [])
+  );
 
   const carregarMembros = async () => {
     setLoading(true);
@@ -48,8 +50,8 @@ export default function RemoverMembro() {
               Alert.alert("Sucesso", "Membro removido!", [
                 { text: "OK", onPress: () => router.back() }
               ]);
-            } catch (error) {
-              Alert.alert("Erro", "Não foi possível remover o membro. Tente novamente!");
+            } catch (error: any) {
+              Alert.alert("Ops!", error?.response?.data?.error || "Ação não permitida.");
             } finally {
               setRemovendо(false);
             }
@@ -79,14 +81,14 @@ export default function RemoverMembro() {
       ) : membros.length > 0 ? (
         membros.map((membro: any) => (
           <TouchableOpacity
-            key={membro.id}
-            onPress={() => setSelecionado(membro.id)}
+            key={membro.userId}
+            onPress={() => setSelecionado(membro.userId)}
             style={{
-              backgroundColor: selecionado === membro.id ? "#2D4A9F" : "#1D2F6F",
+              backgroundColor: selecionado === membro.userId ? "#2D4A9F" : "#1D2F6F",
               padding: 20,
               borderRadius: 15,
               marginBottom: 15,
-              borderWidth: selecionado === membro.id ? 2 : 0,
+              borderWidth: selecionado === membro.userId ? 2 : 0,
               borderColor: "#4F7CFF"
             }}
           >
@@ -94,15 +96,10 @@ export default function RemoverMembro() {
           </TouchableOpacity>
         ))
       ) : (
-        // Fallback mockado
-        <>
-          <View style={{ backgroundColor: "#1D2F6F", padding: 20, borderRadius: 15, marginBottom: 15 }}>
-            <Text style={{ color: "white", fontSize: 18 }}>👤 Nique</Text>
-          </View>
-          <View style={{ backgroundColor: "#1D2F6F", padding: 20, borderRadius: 15, marginBottom: 15 }}>
-            <Text style={{ color: "white", fontSize: 18 }}>👤 João</Text>
-          </View>
-        </>
+        
+        <Text style={{ color: "#ccc", textAlign: "center" }}>
+          Nenhum membro encontrado.
+        </Text>
       )}
 
       <TouchableOpacity

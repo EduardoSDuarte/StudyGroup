@@ -23,8 +23,8 @@ export default function EditarGrupo() {
       Alert.alert("Sucesso", "Grupo atualizado!", [
         { text: "OK", onPress: () => router.back() }
       ]);
-    } catch (error) {
-      Alert.alert("Erro", "Não foi possível atualizar o grupo. Tente novamente!");
+    } catch (error:any) {
+      Alert.alert("Ops!", error?.response?.data?.error || "Ação não permitida.");
     } finally {
       setLoading(false);
     }
