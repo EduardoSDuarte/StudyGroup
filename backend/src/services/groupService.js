@@ -139,7 +139,7 @@ const transferAdmin = async (adminId, groupId, newAdminId) => {
 
 // 🔻 EXPORTS
 
-const generateInvite = async (adminId, groupId) => {
+const generateInvite = async (userId, groupId) => {
   const groupDoc = await db.collection("groups").doc(groupId).get();
   if (!groupDoc.exists) throw new Error("Grupo não existe");
 

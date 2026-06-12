@@ -50,11 +50,11 @@ export default function Grupo() {
       </Text>
 
       <View style={{ backgroundColor: "#1D2F6F", borderRadius: 20, padding: 20, marginBottom: 20 }}>
-        <Text style={{ color: "white", fontSize: 20, fontWeight: "bold", marginBottom: 10 }}>🏆 Ranking Atual</Text>
+        <Text style={{ color: "white", fontSize: 20, fontWeight: "bold", marginBottom: 10 }}>🏆 Top 3 do Mês </Text>
         {loading ? (
           <ActivityIndicator color="#4F7CFF" />
         ) : ranking.length > 0 ? (
-          ranking.slice(0, 2).map((item: any, index: number) => (
+          ranking.slice(0, 3).map((item: any, index: number) => (
             <Text key={index} style={{ color: index === 0 ? "#FFD700" : "#C0C0C0", marginTop: 5 }}>
               {index === 0 ? "🥇" : "🥈"} {item.userName} — {item.studyTime}
             </Text>
@@ -125,12 +125,6 @@ export default function Grupo() {
           <Text style={{ color: "white", marginTop: 8 }}>Modo Foco</Text>
         </TouchableOpacity>
       </View>
-
-      {/* Notificações */}
-      <TouchableOpacity onPress={() => router.push("/notificacoes")} style={{ backgroundColor: "#1D2F6F", padding: 20, borderRadius: 15, alignItems: "center", marginBottom: 20 }}>
-        <Text style={{ color: "white", fontSize: 18 }}>🔔 Notificações</Text>
-      </TouchableOpacity>
-
       <TouchableOpacity onPress={() => router.push("/editarGrupo")} style={{ backgroundColor: "#F39C12", padding: 15, borderRadius: 12, marginBottom: 10, alignItems: "center" }}>
         <Text style={{ color: "white", fontWeight: "bold" }}>✏️ Editar Grupo</Text>
       </TouchableOpacity>

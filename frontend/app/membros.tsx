@@ -55,6 +55,7 @@ export default function Membros() {
       ]
     );    
     } catch (error) {
+      console.log("erro convite:", JSON.stringify(error));
       Alert.alert("Erro", "Não foi possível gerar o convite. Tente novamente!");
     }
   };

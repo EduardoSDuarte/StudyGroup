@@ -18,8 +18,15 @@ const getRanking = async (groupId) => {
     const monthlyKey = `${userId}_${groupId}_${month}`;
     const monthlyDoc = await db.collection("monthlyStudyTime").doc(monthlyKey).get();
 
+    let userName = "Usuário";
+    try {
+      const useRecord = await admin.auth().getUser(UserId);
+      userName = userRecord.displayName || userRecord.email || "Usuário";
+    } catch (_e) {}
+
     return {
       userId,
+      userName,
       role: doc.data().role,
       totalTime: monthlyDoc.exists ? monthlyDoc.data().totalTime || 0 : 0,
     };
@@ -68,8 +75,15 @@ const getDailyRanking = async (groupId) => {
     const dailyKey = `${userId}_${groupId}_${today}`;
     const dailyDoc = await db.collection("dailyStudyTime").doc(dailyKey).get();
 
+    let userName = "Usuário";
+    try {
+      const userRecord = await admin.auth().getUser(userId);
+      userName = useRecord.displayName || userRecord.email || "Usuário";
+    } catch (_e) {}
+
     return {
       userId,
+      userName,
       role: doc.data().role,
       totalTime: dailyDoc.exists ? dailyDoc.data().totalTime || 0 : 0,
     };
