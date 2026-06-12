@@ -7,8 +7,8 @@ export const listarLembretes = async (groupId: string) => {
 };
 
 // Criar lembrete ou evento na agenda
-export const criarLembrete = async (groupId: string, title: string, date: string) => {
-  const res = await api.post('/reminder/create', { groupId, title, date });
+export const criarLembrete = async (groupId: string, title: string, datetime: string) => {
+  const res = await api.post('/reminder/create', { groupId, title, datetime });
   return res.data;
 };
 

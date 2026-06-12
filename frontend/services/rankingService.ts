@@ -18,13 +18,13 @@ export const listarHistoricoRanking = async (groupId: string) => {
 
 // Iniciar sessão de estudo
 export const iniciarSessao = async (groupId: string) => {
-  const res = await api.post('/session/start', { groupId });
+  const res = await api.post('/timer/start', { groupId });
   return res.data;
 };
 
 // Encerrar sessão de estudo (backend calcula duração e atualiza ranking)
 export const encerrarSessao = async (groupId: string) => {
-  const res = await api.post('/session/stop', { groupId });
+  const res = await api.post('/timer/stop', { groupId });
   return res.data;
 };
 
@@ -46,4 +46,14 @@ export const encerrarChamada = async (groupId: string) => {
 export const buscarChamadaAtiva = async (groupId: string) => {
   const res = await api.get(`/call/active/${groupId}`);
   return res.data; // retorna { roomUrl: "..." } se houver chamada ativa
+};
+
+export const listarRankingDiario = async (groupId: string) => {
+  const res = await api.get(`/ranking/daily/${groupId}`);
+  return res.data;
+};
+
+export const buscarTempoMensal = async (groupId: string) => {
+  const res = await api.get(`/ranking/monthly-time/${groupId}`);
+  return res.data; // { totalTime: number, month: string }
 };

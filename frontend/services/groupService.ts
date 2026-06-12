@@ -31,8 +31,8 @@ export const gerarConvite = async (groupId: string) => {
 };
 
 // Editar nome do grupo
-export const editarGrupo = async (groupId: string, name: string) => {
-  const res = await api.put('/group/update', { groupId, name });
+export const editarGrupo = async (groupId: string, newName: string) => {
+  const res = await api.put('/group/update', { groupId, newName });
   return res.data;
 };
 
@@ -44,7 +44,7 @@ export const sairDoGrupo = async (groupId: string) => {
 
 // Excluir grupo (somente admin)
 export const excluirGrupo = async (groupId: string) => {
-  const res = await api.delete('/group/delete', { data: { groupId } });
+  const res = await api.post('/group/delete-group', { groupId });
   return res.data;
 };
 
@@ -67,14 +67,14 @@ export const listarSolicitacoes = async (groupId: string) => {
 };
 
 // Aprovar solicitação de entrada
-export const aprovarSolicitacao = async (groupId: string, userId: string) => {
-  const res = await api.post('/group/approve-request', { groupId, userId });
+export const aprovarSolicitacao = async (groupId: string, requestId: string) => {
+  const res = await api.post('/group/approve-request', { groupId, requestId });
   return res.data;
 };
 
 // Recusar solicitação de entrada
-export const recusarSolicitacao = async (groupId: string, userId: string) => {
-  const res = await api.post('/group/reject-request', { groupId, userId });
+export const recusarSolicitacao = async (groupId: string, requestId: string) => {
+  const res = await api.post('/group/reject-request', { groupId, requestId });
   return res.data;
 };
 
