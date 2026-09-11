@@ -1,18 +1,14 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import { useState, useEffect, useRef } from "react";
 import { TimerContext } from "../services/timerContext";
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
 export const unstable_settings = {
   anchor: '(tabs)',
 };
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   const [tempo, setTempo] = useState(0);
   const [rodando, setRodando] = useState(false);
   const [sessaoAtiva, setSessaoAtiva] = useState(false);
@@ -29,16 +25,10 @@ export default function RootLayout() {
     return () => clearInterval(intervaloRef.current);
   }, [rodando]);
 
-
   return (
-    <TimerContext.Provider value={{ tempo, rodando, sessaoAtiva, setTempo, setRodando, setSessaoAtiva }}> 
-     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <TimerContext.Provider value={{ tempo, rodando, sessaoAtiva, setTempo, setRodando, setSessaoAtiva }}>
       <Stack>
-        {/* Telas do template */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-
-        {/* Todas as telas do StudyGroup sem header nativo */}
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="cadastro" options={{ headerShown: false }} />
         <Stack.Screen name="recuperarSenha" options={{ headerShown: false }} />
@@ -74,7 +64,6 @@ export default function RootLayout() {
         <Stack.Screen name="painelGrupos" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style="auto" />
-    </ThemeProvider>
-   </TimerContext.Provider>
+    </TimerContext.Provider>
   );
 }

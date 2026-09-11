@@ -2,7 +2,7 @@ import axios from 'axios';
 import { auth } from './firebase';
 
 const api = axios.create({
-  baseURL: 'http://192.168.231.51:3000'
+  baseURL: 'http://192.168.1.104:3000'
 });
 
 api.interceptors.request.use(async (config) => {
